@@ -73,9 +73,9 @@ export function Programs() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.3 }}
-          className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_1fr]"
+          className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-stretch"
         >
-          <div className="rounded-xl border border-ink-600 bg-ink-800 p-7 sm:p-9">
+          <div className="flex flex-col rounded-xl border border-ink-600 bg-ink-800 p-7 sm:p-9">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <h3 className="text-2xl sm:text-3xl">{program.name}</h3>
@@ -99,6 +99,16 @@ export function Programs() {
               ))}
             </ul>
 
+            {/* The three stats used to sit in the right-hand column, which forced
+                that column taller than this card and left dead space here.
+                Inside the card they fill it, and `mt-auto` absorbs any slack so
+                the footer stays pinned to the bottom edge. */}
+            <dl className="mt-auto grid grid-cols-2 gap-3 pt-8 sm:grid-cols-3">
+              <Detail label="Training days" value={`${program.days_per_week} / week`} />
+              <Detail label="Session length" value={`${program.session_minutes} min`} />
+              <Detail label="Best for" value={program.best_for ?? '—'} />
+            </dl>
+
             <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-t border-ink-600 pt-6">
               <p>
                 <span className="font-display text-3xl font-bold text-brand-500">${price}</span>
@@ -111,37 +121,32 @@ export function Programs() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 self-start">
-            <Detail label="Training days" value={`${program.days_per_week} / week`} />
-            <Detail label="Session length" value={`${program.session_minutes} min`} />
-            <Detail label="Best for" value={program.best_for ?? '—'} span />
+          {/* Nothing but the photograph, taking its height from the card beside
+              it, so both columns start and finish on the same line. */}
+          <Figure
+            src={`/images/coach-auto-gym-${active + 1}.png`}
+            alt={`Coach Auto training — ${program.name}`}
+            ratio="fill"
+            focus="upper"
+            width={1000}
+            height={1333}
+            caption="Every session is written by hand, then reviewed against what you actually lifted."
+          />
 
-            {/* Portrait source shown at a portrait ratio. The old fixed-height
-                landscape box cropped the subject down to a horizontal band. */}
-            <Figure
-              src={`/images/coach-auto-gym-${active + 1}.png`}
-              alt={`Coach Auto training — ${program.name}`}
-              ratio="portrait"
-              focus="upper"
-              width={1000}
-              height={1333}
-              className="col-span-2"
-              caption="Every session is written by hand, then reviewed against what you actually lifted."
-            />
-          </div>
         </motion.div>
       </AnimatePresence>
     </Section>
   )
 }
 
+/** One stat inside the card's definition list. */
 function Detail({ label, value, span }) {
   return (
-    <div className={cn('rounded-xl border border-ink-600 bg-ink-850 p-5', span && 'col-span-2')}>
-      <p className="font-display text-[11px] font-semibold uppercase tracking-widest text-chalk-500">
+    <div className={cn('rounded-xl border border-ink-600 bg-ink-850 p-4', span && 'col-span-2')}>
+      <dt className="font-display text-[11px] font-semibold uppercase tracking-widest text-chalk-500">
         {label}
-      </p>
-      <p className="mt-2 font-display text-lg text-white">{value}</p>
+      </dt>
+      <dd className="mt-2 font-display text-base leading-snug text-white">{value}</dd>
     </div>
   )
 }

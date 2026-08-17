@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils'
  *   ratio="tall"      3:5  — narrow columns and the auth panel
  *   ratio="square"    1:1  — grid cells
  *   ratio="wide"     16:9  — only for genuinely landscape sources
+ *   ratio="fill"           — take the height of the row, for column alignment
  *
  * `focus` maps to object-position, so the subject stays in frame when the
  * container is a different shape from the file.
@@ -25,6 +26,10 @@ const RATIOS = {
   square: 'aspect-square',
   wide: 'aspect-video',
   golden: 'aspect-[4/5]',
+  // Match the height of a neighbouring column instead of imposing one.
+  // Stays portrait while the grid is stacked, then fills the row from lg up —
+  // which is what makes a photo line up flush with the card beside it.
+  fill: 'aspect-[3/4] lg:aspect-auto lg:h-full',
 }
 
 const FOCUS = {

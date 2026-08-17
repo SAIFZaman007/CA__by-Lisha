@@ -56,7 +56,7 @@ export function Included() {
       <SectionHeading
         eyebrow="What you get"
         title="Included at"
-        accent="every level."
+        accent="every level"
         description="The level sets how many days a week you train. Everything below comes with all three."
         align="center"
       />

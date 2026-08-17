@@ -15,7 +15,7 @@ import { PROCESS } from '@/data/site'
 export function Approach() {
   return (
     <Section id="approach">
-      <div className="grid gap-14 lg:grid-cols-2 lg:gap-20">
+      <div className="grid gap-14 lg:grid-cols-2 lg:items-stretch lg:gap-20">
         <div>
           <SectionHeading
             eyebrow="How coaching works"
@@ -42,14 +42,15 @@ export function Approach() {
           </motion.ol>
         </div>
 
-        <motion.div variants={fadeUp} className="space-y-4 self-start">
-          {/* Matched ratios, so the pair reads as one composition rather than
-              two mismatched crops with a hole beneath them. */}
-          <div className="grid grid-cols-2 gap-4">
+        {/* A flex column, not a stack with `self-start`. The photo pair takes the
+            leftover height (`flex-1`), so this column finishes level with the
+            process list beside it however long that list grows. */}
+        <motion.div variants={fadeUp} className="flex flex-col gap-4">
+          <div className="grid min-h-0 flex-1 grid-cols-2 gap-4">
             <Figure
               src="/images/coach-auto-gym-1.png"
               alt="Coach Auto mid-session in her gym"
-              ratio="portrait"
+              ratio="fill"
               focus="upper"
               width={1000}
               height={1333}
@@ -57,15 +58,16 @@ export function Approach() {
             <Figure
               src="/images/coach-auto-gym-3.png"
               alt="Coach Auto between working sets"
-              ratio="portrait"
+              ratio="fill"
               focus="upper"
               width={1000}
               height={1333}
             />
           </div>
 
-          {/* Three short proof cards fill what used to be empty space, and each
-              one answers a question people actually ask before signing up. */}
+          {/* Three short proof cards, each answering a question people actually
+              ask before signing up. Fixed height, so all the slack goes to the
+              photographs above. */}
           <div className="grid gap-4 sm:grid-cols-3">
             {[
               {
@@ -92,6 +94,7 @@ export function Approach() {
             ))}
           </div>
         </motion.div>
+
       </div>
     </Section>
   )

@@ -74,7 +74,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
     <section id="start" className="relative overflow-hidden py-20 sm:py-28">
       <div className="absolute inset-0">
         <img
-          src="/images/coach-auto-gym-2.jpg"
+          src="/images/coach-auto-gym-2.png"
           alt=""
           className="size-full object-cover object-center opacity-25"
           loading="lazy"
@@ -85,8 +85,8 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
       </div>
 
       <Container className="relative z-10">
-        <motion.div variants={stagger()} {...inView} className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-          <motion.div variants={fadeUp}>
+        <motion.div variants={stagger()} {...inView} className="grid gap-12 lg:grid-cols-2 lg:items-stretch lg:gap-20">
+          <motion.div variants={fadeUp} className="flex flex-col">
             <div className="mb-4 flex items-center gap-3">
               <span className="h-0.5 w-8 bg-brand-500" aria-hidden="true" />
               <span className="eyebrow">Start here</span>
@@ -128,11 +128,13 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
             {/* This column used to end here, leaving a tall empty rectangle beside
                 the form. Setting out what happens after submitting fills it with
                 the thing a hesitant visitor most wants to know. */}
-            <div className="mt-10 rounded-xl border border-ink-600 bg-ink-900/70 p-6 backdrop-blur">
+            {/* flex-1 lets this card grow until its bottom edge meets the
+                form's, which is what squares the two columns off. */}
+            <div className="mt-10 flex flex-1 flex-col rounded-xl border border-ink-600 bg-ink-900/70 p-6 backdrop-blur">
               <h3 className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-white">
                 What happens next
               </h3>
-              <ol className="mt-5 space-y-5">
+              <ol className="mt-5 mb-6 space-y-5">
                 {NEXT_STEPS.map((step, index) => (
                   <li key={step.title} className="flex gap-4">
                     <span
@@ -151,7 +153,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 ))}
               </ol>
 
-              <p className="mt-6 flex items-start gap-2 border-t border-ink-600 pt-5 text-xs leading-relaxed text-chalk-500">
+              <p className="mt-auto flex items-start gap-2 border-t border-ink-600 pt-5 text-xs leading-relaxed text-chalk-500">
                 <Lock className="mt-0.5 size-3.5 shrink-0 text-chalk-500" aria-hidden="true" />
                 Your details go to Coach Auto only. No mailing list, no third parties, and you can
                 ask for them to be deleted at any time.
@@ -159,11 +161,11 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
             </div>
           </motion.div>
 
-          <motion.div variants={fadeUp}>
+          <motion.div variants={fadeUp} className="flex">
             <form
               onSubmit={handleSubmit((values) => mutation.mutate(values))}
               noValidate
-              className="space-y-4 rounded-xl border border-ink-600 bg-ink-800/95 p-6 backdrop-blur sm:p-8"
+              className="flex w-full flex-col gap-4 rounded-xl border border-ink-600 bg-ink-800/95 p-6 backdrop-blur sm:p-8"
             >
               <h3 className="font-display text-lg uppercase tracking-wide text-white">
                 Get a coaching call
@@ -220,7 +222,15 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 Send me occasional training and nutrition tips. You can stop this at any time.
               </label>
 
-              <Button type="submit" fullWidth size="lg" loading={mutation.isPending}>
+              {/* mt-auto keeps the button on the bottom edge whatever the left
+                  column does, so the two cards finish level. */}
+              <Button
+                type="submit"
+                fullWidth
+                size="lg"
+                loading={mutation.isPending}
+                className="mt-auto"
+              >
                 Send my details
               </Button>
             </form>
