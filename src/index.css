@@ -1,0 +1,179 @@
+@import 'tailwindcss';
+
+@import '@fontsource-variable/inter';
+@import '@fontsource/barlow-condensed/600.css';
+@import '@fontsource/barlow-condensed/700.css';
+
+/* ==========================================================================
+   Coach Auto design tokens
+   Black gym floor, red under the bar. Taken from the approved Figma and the
+   logo's red, so the site and the brand mark are the same colour.
+   ========================================================================== */
+@theme {
+  --color-ink-950: #08080a;
+  --color-ink-900: #0b0b0d;
+  --color-ink-850: #101013;
+  --color-ink-800: #141417;
+  --color-ink-700: #1c1c20;
+  --color-ink-600: #26262b;
+  --color-ink-500: #3a3a42;
+
+  --color-brand-400: #f04a55;
+  --color-brand-500: #e5202c;
+  --color-brand-600: #c4141f;
+  --color-brand-700: #9c0f18;
+
+  --color-chalk-50: #ffffff;
+  --color-chalk-200: #d6d6dc;
+  --color-chalk-400: #9a9aa4;
+  --color-chalk-500: #74747e;
+
+  --color-signal-green: #22c55e;
+  --color-signal-blue: #3b82f6;
+  --color-signal-amber: #f59e0b;
+
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+
+  --radius-card: 0.75rem;
+}
+
+/* ==========================================================================
+   Base
+   ========================================================================== */
+@layer base {
+  * {
+    border-color: var(--color-ink-600);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-ink-900);
+    color: var(--color-chalk-50);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    line-height: 0.95;
+  }
+
+  /* Keyboard users must always be able to see where they are. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-brand-500);
+    color: white;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-600) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-600);
+    border-radius: 8px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-500);
+  }
+
+  /* Number inputs read better without the spinners in a data-entry form. */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* The one flourish: a red stress line under section eyebrows, like a bar
+     loaded on the rack. */
+  .eyebrow {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-chalk-400);
+  }
+
+  .hairline {
+    background: linear-gradient(
+      90deg,
+      var(--color-brand-500) 0%,
+      var(--color-brand-500) 12%,
+      var(--color-ink-600) 12%,
+      var(--color-ink-600) 100%
+    );
+  }
+
+  .card {
+    background-color: var(--color-ink-800);
+    border: 1px solid var(--color-ink-600);
+    border-radius: var(--radius-card);
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-ink-800) 25%,
+      var(--color-ink-700) 50%,
+      var(--color-ink-800) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+}
+
+/* Respect the system setting. Anyone who gets motion sick still gets the site. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

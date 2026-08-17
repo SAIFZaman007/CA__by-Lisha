@@ -1,0 +1,27 @@
+# Coach Auto — Autonomy Health and Fitness
+User-agent: *
+Allow: /
+
+# The client portal and account screens hold personal health data.
+Disallow: /portal
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /api/
+
+# Answer engines are welcome on the public pages — that is where the
+# programme and calculator explanations live.
+User-agent: GPTBot
+Allow: /
+Disallow: /portal
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /portal
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /portal
+
+Sitemap: https://autonomyfitness.press/sitemap.xml

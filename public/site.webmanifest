@@ -1,0 +1,12 @@
+{
+  "name": "Coach Auto — Autonomy Health and Fitness",
+  "short_name": "Coach Auto",
+  "description": "Online strength coaching, meal plans and progress tracking.",
+  "start_url": "/portal",
+  "display": "standalone",
+  "background_color": "#0b0b0d",
+  "theme_color": "#0b0b0d",
+  "icons": [
+    { "src": "/images/logo-coach-auto.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
