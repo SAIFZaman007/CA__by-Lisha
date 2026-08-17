@@ -5,6 +5,7 @@ import { Check, ArrowRight } from 'lucide-react'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Card'
+import { Figure } from '@/components/ui/Figure'
 import { api } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
 import { cn } from '@/lib/utils'
@@ -23,7 +24,7 @@ export function Programs() {
   if (isLoading) {
     return (
       <Section id="programs" tone="raised">
-        <SectionHeading eyebrow="Coaching programmes" title="Pick your level" />
+        <SectionHeading eyebrow="Coaching programmes" title="Three levels." accent="One standard." />
         <Skeleton className="mt-10 h-96 w-full" />
       </Section>
     )
@@ -37,7 +38,8 @@ export function Programs() {
     <Section id="programs" tone="raised">
       <SectionHeading
         eyebrow="Coaching programmes"
-        title="Three levels. One standard."
+        title="Three levels."
+        accent="One standard."
         description="You start where your training history puts you and move up when Coach Auto assesses you are ready — not before."
       />
 
@@ -113,16 +115,19 @@ export function Programs() {
             <Detail label="Training days" value={`${program.days_per_week} / week`} />
             <Detail label="Session length" value={`${program.session_minutes} min`} />
             <Detail label="Best for" value={program.best_for ?? '—'} span />
-            <div className="col-span-2 overflow-hidden rounded-xl border border-ink-600">
-              <img
-                src={`/images/coach-auto-gym-${active + 1}.jpg`}
-                alt=""
-                className="h-56 w-full object-cover object-top sm:h-72"
-                loading="lazy"
-                width="900"
-                height="1300"
-              />
-            </div>
+
+            {/* Portrait source shown at a portrait ratio. The old fixed-height
+                landscape box cropped the subject down to a horizontal band. */}
+            <Figure
+              src={`/images/coach-auto-gym-${active + 1}.png`}
+              alt={`Coach Auto training — ${program.name}`}
+              ratio="portrait"
+              focus="upper"
+              width={1000}
+              height={1333}
+              className="col-span-2"
+              caption="Every session is written by hand, then reviewed against what you actually lifted."
+            />
           </div>
         </motion.div>
       </AnimatePresence>

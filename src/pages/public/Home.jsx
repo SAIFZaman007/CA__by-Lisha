@@ -1,5 +1,6 @@
 import { Hero } from '@/components/sections/Hero'
 import { Programs } from '@/components/sections/Programs'
+import { Included } from '@/components/sections/Included'
 import { Approach } from '@/components/sections/Approach'
 import { Nutrition } from '@/components/sections/Nutrition'
 import { Results } from '@/components/sections/Results'
@@ -23,6 +24,7 @@ export default function Home() {
     <>
       <Hero />
       <Programs />
+      <Included />
       <Approach />
       <Nutrition />
 

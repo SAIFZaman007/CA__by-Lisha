@@ -35,7 +35,7 @@ export default function ResetPassword() {
   if (!token) {
     return (
       <AuthLayout title="Link not valid" path="/reset-password">
-        <div className="space-y-5">
+        <div className="space-y-4">
           <p className="text-sm leading-relaxed text-chalk-400">
             This reset link is missing its token. Request a fresh one and use the most recent
             email.
@@ -54,7 +54,7 @@ export default function ResetPassword() {
       subtitle="Choose something you have not used here before."
       path="/reset-password"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input
           label="New password"
           type="password"

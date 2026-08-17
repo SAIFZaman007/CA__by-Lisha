@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from '@/components/ui/Toast'
-import { Check, Mail } from 'lucide-react'
+import { Check, Lock, Mail } from 'lucide-react'
 import { InstagramIcon } from '@/components/ui/icons'
 import { Container, motion, fadeUp, inView, stagger } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
@@ -21,6 +21,21 @@ const schema = z.object({
   consent_marketing: z.boolean().optional(),
   website: z.string().max(200).optional(), // honeypot
 })
+
+const NEXT_STEPS = [
+  {
+    title: 'You send your details',
+    detail: 'Thirty seconds. Nothing you need to prepare or look up first.',
+  },
+  {
+    title: 'Coach Auto reads them',
+    detail: 'A real assessment of which level fits your training history — not a template reply.',
+  },
+  {
+    title: 'You get an honest answer',
+    detail: 'Including if coaching is not right for you yet. Within one business day.',
+  },
+]
 
 const PROMISES = [
   'A reply within one business day',
@@ -66,7 +81,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
           width="900"
           height="1373"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/95 to-ink-950/80" />
+        <div className="absolute inset-0 bg-linear-to-r from-ink-950 via-ink-950/95 to-ink-950/80" />
       </div>
 
       <Container className="relative z-10">
@@ -108,6 +123,39 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 <InstagramIcon className="size-4" aria-hidden="true" />
                 {SITE.instagramHandle}
               </a>
+            </div>
+
+            {/* This column used to end here, leaving a tall empty rectangle beside
+                the form. Setting out what happens after submitting fills it with
+                the thing a hesitant visitor most wants to know. */}
+            <div className="mt-10 rounded-xl border border-ink-600 bg-ink-900/70 p-6 backdrop-blur">
+              <h3 className="font-display text-sm font-semibold uppercase tracking-[0.18em] text-white">
+                What happens next
+              </h3>
+              <ol className="mt-5 space-y-5">
+                {NEXT_STEPS.map((step, index) => (
+                  <li key={step.title} className="flex gap-4">
+                    <span
+                      className="grid size-7 shrink-0 place-items-center rounded-full border border-brand-500/40 bg-brand-500/10 font-display text-xs font-bold text-brand-500"
+                      aria-hidden="true"
+                    >
+                      {index + 1}
+                    </span>
+                    <span>
+                      <span className="block text-sm font-semibold text-white">{step.title}</span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-chalk-400">
+                        {step.detail}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ol>
+
+              <p className="mt-6 flex items-start gap-2 border-t border-ink-600 pt-5 text-xs leading-relaxed text-chalk-500">
+                <Lock className="mt-0.5 size-3.5 shrink-0 text-chalk-500" aria-hidden="true" />
+                Your details go to Coach Auto only. No mailing list, no third parties, and you can
+                ask for them to be deleted at any time.
+              </p>
             </div>
           </motion.div>
 
@@ -152,13 +200,13 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
               />
               <Textarea
                 label="Anything Coach Auto should know?"
-                rows={3}
+                rows={5}
                 placeholder="Training history, injuries, schedule…"
                 {...register('message')}
               />
 
               {/* Bots fill this in; people never see it. */}
-              <div className="absolute -left-[9999px]" aria-hidden="true">
+              <div className="absolute left-[-9999px]" aria-hidden="true">
                 <label htmlFor="website">Leave this field empty</label>
                 <input id="website" type="text" tabIndex={-1} autoComplete="off" {...register('website')} />
               </div>

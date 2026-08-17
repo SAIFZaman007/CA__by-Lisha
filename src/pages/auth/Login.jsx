@@ -36,7 +36,7 @@ export default function Login() {
       subtitle="Sign in to continue to your dashboard."
       path="/login"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input
           label="Email address"
           type="email"

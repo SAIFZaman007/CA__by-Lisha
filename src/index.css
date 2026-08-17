@@ -166,6 +166,142 @@
   }
 }
 
+@layer components {
+  /* Keyboard-only shortcut past the navigation. Off-screen until focused. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    z-index: 100;
+  }
+  .skip-link:focus {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background: var(--color-brand-500);
+    color: #fff;
+    font-size: 0.875rem;
+  }
+}
+
+/* ==========================================================================
+   Navigation links
+   One class handles hover and the active route: the label lifts to white with
+   a red glow while an underline wipes in from the left. The underline is a
+   pseudo-element rather than a border so it can animate without shifting
+   layout, and it is driven by scaleX (compositor-only) rather than width.
+   ========================================================================== */
+@layer components {
+  .nav-link {
+    position: relative;
+    display: inline-block;
+    padding-block: 0.35rem;
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-chalk-200);
+    transition:
+      color 200ms ease,
+      text-shadow 200ms ease;
+  }
+
+  .nav-link::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--color-brand-500);
+    box-shadow: 0 0 8px 0 var(--color-brand-500);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: #fff;
+    text-shadow: 0 0 14px color-mix(in srgb, var(--color-brand-500) 70%, transparent);
+  }
+
+  .nav-link:hover::after,
+  .nav-link:focus-visible::after {
+    transform: scaleX(1);
+  }
+
+  /* The current route stays lit, so the user can always see where they are. */
+  .nav-link[aria-current='page'] {
+    color: var(--color-brand-500);
+    text-shadow: 0 0 16px color-mix(in srgb, var(--color-brand-500) 60%, transparent);
+  }
+
+  .nav-link[aria-current='page']::after {
+    transform: scaleX(1);
+  }
+
+  /* Mobile menu rows: same idea, but a left rail reads better in a stack. */
+  .nav-link-mobile {
+    position: relative;
+    display: block;
+    border-left: 2px solid transparent;
+    padding: 0.75rem 1rem;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-chalk-200);
+    transition:
+      color 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease;
+  }
+
+  .nav-link-mobile:hover,
+  .nav-link-mobile[aria-current='page'] {
+    border-left-color: var(--color-brand-500);
+    background-color: color-mix(in srgb, var(--color-brand-500) 10%, transparent);
+    color: var(--color-brand-500);
+    text-shadow: 0 0 14px color-mix(in srgb, var(--color-brand-500) 50%, transparent);
+  }
+}
+
+@layer utilities {
+  /* Hairline grid behind the hero. Cheaper and sharper than a background image,
+     and it scales to any viewport without a second asset. */
+  .bg-grid {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  /* Scroll without a visible scrollbar. Used on the auth panel, which must fit
+     the viewport but still be reachable on very short screens. */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Soft red bloom used behind the hero portrait and section accents. */
+  .bloom-brand {
+    background: radial-gradient(
+      circle at center,
+      color-mix(in srgb, var(--color-brand-500) 32%, transparent) 0%,
+      transparent 70%
+    );
+  }
+
+  .text-glow-brand {
+    text-shadow: 0 0 24px color-mix(in srgb, var(--color-brand-500) 45%, transparent);
+  }
+}
+
 /* Respect the system setting. Anyone who gets motion sick still gets the site. */
 @media (prefers-reduced-motion: reduce) {
   *,

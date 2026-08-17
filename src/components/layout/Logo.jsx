@@ -89,7 +89,7 @@ export function LogoStacked({ tone = 'light', className }) {
       alt={ALT}
       width="900"
       height="515"
-      className={cn('h-auto w-full max-w-[210px] object-contain', className)}
+      className={cn('h-auto w-full max-w-52.5 object-contain', className)}
       loading="lazy"
       decoding="async"
     />

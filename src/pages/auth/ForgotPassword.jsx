@@ -30,7 +30,7 @@ export default function ForgotPassword() {
   if (sent) {
     return (
       <AuthLayout title="Check your email" path="/forgot-password">
-        <div className="space-y-5">
+        <div className="space-y-4">
           <MailCheck className="size-10 text-signal-green" aria-hidden="true" />
           <p className="text-sm leading-relaxed text-chalk-400">
             If that email has an account, a reset link is on its way. The link works for 30
@@ -50,7 +50,7 @@ export default function ForgotPassword() {
       subtitle="Enter your email and we'll send you a link to set a new password."
       path="/forgot-password"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input
           label="Email address"
           type="email"

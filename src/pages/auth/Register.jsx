@@ -42,7 +42,7 @@ export default function Register() {
       seoTitle="Create account"
       path="/register"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <Input
           label="Full name"
           autoComplete="name"
@@ -67,7 +67,7 @@ export default function Register() {
           label="Password"
           type="password"
           autoComplete="new-password"
-          hint="At least 10 characters, with an uppercase letter, a lowercase letter and a number."
+          hint="10+ characters, with upper and lower case and a number."
           error={errors.password?.message}
           {...register('password', {
             required: 'Choose a password.',
@@ -99,7 +99,7 @@ export default function Register() {
           Create account
         </Button>
 
-        <p className="text-center text-xs leading-relaxed text-chalk-500">
+        <p className="text-center text-[11px] leading-relaxed text-chalk-500">
           By creating an account you agree to our{' '}
           <Link to="/terms" className="text-chalk-400 hover:underline">
             terms

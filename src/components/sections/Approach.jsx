@@ -1,10 +1,16 @@
+import { CheckCircle2, MessageSquare, Repeat } from 'lucide-react'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
+import { Figure } from '@/components/ui/Figure'
 import { PROCESS } from '@/data/site'
 
 /**
  * The four stages are a genuine sequence — assessment has to precede the
  * programme, and the review loop only exists because the work came first — so
  * numbering them carries real information rather than decorating the list.
+ *
+ * The right column previously mixed a full-height image with a shorter stacked
+ * column, which left a dead rectangle underneath. Both photographs now share one
+ * ratio and the supporting cards sit beneath the pair, so the grid resolves.
  */
 export function Approach() {
   return (
@@ -13,7 +19,8 @@ export function Approach() {
         <div>
           <SectionHeading
             eyebrow="How coaching works"
-            title="Coaching built from the inside out"
+            title="Coaching built"
+            accent="from the inside out"
             description="No template plans. Coach Auto assesses where you are, writes the work, and reads what comes back every week."
           />
 
@@ -35,30 +42,54 @@ export function Approach() {
           </motion.ol>
         </div>
 
-        <motion.div variants={fadeUp} className="grid grid-cols-2 gap-4 self-center">
-          <img
-            src="/images/coach-auto-gym-1.jpg"
-            alt="Coach Auto training in the gym"
-            className="col-span-1 h-full max-h-96 w-full rounded-xl border border-ink-600 object-cover"
-            loading="lazy"
-            width="900"
-            height="1238"
-          />
-          <div className="grid gap-4">
-            <img
-              src="/images/coach-auto-gym-3.jpg"
-              alt="Coach Auto between working sets"
-              className="h-full w-full rounded-xl border border-ink-600 object-cover"
-              loading="lazy"
-              width="900"
-              height="1466"
+        <motion.div variants={fadeUp} className="space-y-4 self-start">
+          {/* Matched ratios, so the pair reads as one composition rather than
+              two mismatched crops with a hole beneath them. */}
+          <div className="grid grid-cols-2 gap-4">
+            <Figure
+              src="/images/coach-auto-gym-1.png"
+              alt="Coach Auto mid-session in her gym"
+              ratio="portrait"
+              focus="upper"
+              width={1000}
+              height={1333}
             />
-            <div className="rounded-xl border border-ink-600 bg-ink-800 p-5">
-              <p className="font-display text-3xl font-bold text-brand-500">Weekly</p>
-              <p className="mt-1 text-xs leading-snug text-chalk-400">
-                Every log and check-in is reviewed, then the programme is adjusted.
-              </p>
-            </div>
+            <Figure
+              src="/images/coach-auto-gym-3.png"
+              alt="Coach Auto between working sets"
+              ratio="portrait"
+              focus="upper"
+              width={1000}
+              height={1333}
+            />
+          </div>
+
+          {/* Three short proof cards fill what used to be empty space, and each
+              one answers a question people actually ask before signing up. */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: Repeat,
+                stat: 'Weekly',
+                copy: 'Every log and check-in reviewed, then the programme adjusted.',
+              },
+              {
+                icon: MessageSquare,
+                stat: '1 day',
+                copy: 'Typical reply time on messages to your coach.',
+              },
+              {
+                icon: CheckCircle2,
+                stat: 'By hand',
+                copy: 'No generated plans. A person writes every block.',
+              },
+            ].map(({ icon: Icon, stat, copy }) => (
+              <div key={stat} className="rounded-xl border border-ink-600 bg-ink-800 p-5">
+                <Icon className="size-5 text-brand-500" aria-hidden="true" />
+                <p className="mt-3 font-display text-xl font-bold text-white">{stat}</p>
+                <p className="mt-1 text-xs leading-snug text-chalk-400">{copy}</p>
+              </div>
+            ))}
           </div>
         </motion.div>
       </div>
