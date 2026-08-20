@@ -27,6 +27,7 @@ const WorkoutPage = lazy(() => import('@/pages/portal/WorkoutPage'))
 const MealPlanPage = lazy(() => import('@/pages/portal/MealPlanPage'))
 const ProgressPage = lazy(() => import('@/pages/portal/ProgressPage'))
 const WellnessPage = lazy(() => import('@/pages/portal/WellnessPage'))
+const TutorialsPage = lazy(() => import('@/pages/portal/TutorialsPage'))
 const CalculatorsPage = lazy(() => import('@/pages/portal/CalculatorsPage'))
 const MessagesPage = lazy(() => import('@/pages/portal/MessagesPage'))
 const ProfilePage = lazy(() => import('@/pages/portal/ProfilePage'))
@@ -119,6 +120,7 @@ export default function App() {
             <Route path="meal-plan" element={<MealPlanPage />} />
             <Route path="progress" element={<ProgressPage />} />
             <Route path="sleep-cardio" element={<WellnessPage />} />
+            <Route path="tutorials" element={<TutorialsPage />} />
             <Route path="calculators" element={<CalculatorsPage />} />
             <Route path="messages" element={<MessagesPage />} />
             <Route path="profile" element={<ProfilePage />} />

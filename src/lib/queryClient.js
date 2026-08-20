@@ -7,7 +7,6 @@ export const queryClient = new QueryClient({
       gcTime: 5 * 60_000,
       refetchOnWindowFocus: false,
       retry: (failureCount, error) => {
-        // Never retry a request the server has already refused on its merits.
         const status = error?.response?.status
         if (status >= 400 && status < 500) return false
         return failureCount < 2
@@ -38,5 +37,7 @@ export const keys = {
   wellnessSummary: (days) => ['wellness', 'summary', days],
   wellnessTrends: (days) => ['wellness', 'trends', days],
   activityTypes: ['wellness', 'activity-types'],
+  tutorials: (params) => ['tutorials', params],
+  tutorialFilters: ['tutorials', 'filters'],
   thread: ['messages', 'thread'],
 }

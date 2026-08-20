@@ -159,6 +159,12 @@ export const api = {
     trends: (days = 14) => get('/wellness/trends', { days }),
     activityTypes: () => get('/wellness/activity-types'),
   },
+  tutorials: {
+    list: (params) => get('/tutorials', params),
+    filters: () => get('/tutorials/filters'),
+    get: (id) => get(`/tutorials/${id}`),
+    recordView: (id) => post(`/tutorials/${id}/view`).catch(() => {}),
+  },
   messages: {
     thread: () => get('/messages/thread'),
     send: (body) => post('/messages/thread', body),

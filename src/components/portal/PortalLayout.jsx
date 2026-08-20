@@ -12,6 +12,7 @@ import {
   Menu,
   MessageSquare,
   Moon,
+  PlayCircle,
   User,
   X,
 } from 'lucide-react'
@@ -29,6 +30,8 @@ const NAV = [
   // Added after the Figma sign-off: clients log sleep and cardio daily, so it
   // earns a top-level slot rather than being buried inside Progress.
   { to: '/portal/sleep-cardio', label: 'Sleep & Cardio', icon: Moon },
+  // Clients asked for form guidance they can check before they lift, not after.
+  { to: '/portal/tutorials', label: 'Video Tutorials', icon: PlayCircle },
   { to: '/portal/calculators', label: 'Calculators', icon: Calculator },
   { to: '/portal/messages', label: 'Messages', icon: MessageSquare, badge: 'unread' },
   { to: '/portal/profile', label: 'Profile', icon: User },
@@ -54,7 +57,7 @@ function NavItems({ onNavigate, unread }) {
         >
           {({ isActive }) => (
             <>
-              <Icon className="size-[18px] shrink-0" aria-hidden="true" />
+              <Icon className="size-4.5 shrink-0" aria-hidden="true" />
               <span className="flex-1">{label}</span>
               {badge === 'unread' && unread > 0 && (
                 <span className="rounded-full bg-brand-500 px-1.5 py-0.5 text-[11px] font-bold text-white">
