@@ -95,7 +95,7 @@ export default function AboutPage() {
 
             <figure className="relative aspect-992/775 overflow-hidden border border-ink-600 shadow-2xl shadow-black/60">
               <img
-                src="/images/coach-auto-certificate.png"
+                src="/images/Certification.png"
                 alt="Coach Auto Strength & Bodybuilding Coach CPD Accredited Certificate"
                 className="size-full object-cover"
                 width="992"
