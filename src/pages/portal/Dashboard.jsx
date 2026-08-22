@@ -141,7 +141,7 @@ export default function Dashboard() {
               Week {data?.program_week} of {data?.program_total_weeks}
             </span>
             <span className="rounded-md border border-ink-600 px-2.5 py-1.5 text-chalk-400">
-              {data?.level?.replace('level_', 'Level ')}
+              {data?.level ? data.level.replace('level_', 'Level ') : 'No plan yet'}
             </span>
           </div>
         }

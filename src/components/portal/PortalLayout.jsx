@@ -77,7 +77,9 @@ function AccountCard() {
   const user = useAuth((s) => s.user)
   const logout = useAuth((s) => s.logout)
   const name = user?.display_name || user?.full_name || 'Client'
-  const level = user?.profile?.level?.replace('level_', 'Level ') ?? 'Level 1'
+  // Falling back to 'Level 1' told every unsubscribed client they were on a
+  // plan they had never bought. No level means no plan, and it should say so.
+  const level = user?.profile?.level?.replace('level_', 'Level ') ?? 'No plan yet'
 
   return (
     <div className="mt-auto space-y-3 border-t border-ink-700 pt-4">
@@ -108,11 +110,7 @@ export function PortalLayout() {
   const { data: unreadData } = useQuery({
     queryKey: ['messages', 'unread'],
     queryFn: api.messages.unreadCount,
-    // A reply from the coach is the one thing worth noticing quickly, so this
-    // polls faster than anything else in the portal — and stops entirely while
-    // the tab is in the background.
-    refetchInterval: 15_000,
-    refetchIntervalInBackground: false,
+    refetchInterval: 60_000,
   })
   const unread = unreadData?.unread ?? 0
 
