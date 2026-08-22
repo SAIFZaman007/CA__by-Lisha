@@ -20,8 +20,35 @@ export default function MessagesPage() {
   const { data: thread, isLoading } = useQuery({
     queryKey: keys.thread,
     queryFn: api.messages.thread,
-    refetchInterval: 30_000,
+    // Open conversation: poll fast so a reply appears without a reload, and
+    // pause while the tab is hidden.
+    refetchInterval: 8_000,
+    refetchIntervalInBackground: false,
   })
+
+  // Announce a reply that arrived while the page was already open.
+  //
+  // Seeded from the first render rather than from zero: without that, simply
+  // opening a conversation that already had messages would fire a toast for
+  // history the client has read many times.
+  const seenCount = useRef(null)
+  useEffect(() => {
+    const messages = thread?.messages ?? []
+    if (seenCount.current === null) {
+      seenCount.current = messages.length
+      return
+    }
+    if (messages.length > seenCount.current) {
+      const arrived = messages.slice(seenCount.current)
+      // Our own sent message comes back through the same refetch; only a
+      // message from the coach is news.
+      if (arrived.some((message) => message.sender_id !== me?.id)) {
+        toast.success('New message from Coach Auto')
+        qc.invalidateQueries({ queryKey: ['messages', 'unread'] })
+      }
+    }
+    seenCount.current = messages.length
+  }, [thread?.messages, me?.id, qc])
 
   const { register, handleSubmit, reset } = useForm({ defaultValues: { body: '' } })
 

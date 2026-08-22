@@ -108,7 +108,11 @@ export function PortalLayout() {
   const { data: unreadData } = useQuery({
     queryKey: ['messages', 'unread'],
     queryFn: api.messages.unreadCount,
-    refetchInterval: 60_000,
+    // A reply from the coach is the one thing worth noticing quickly, so this
+    // polls faster than anything else in the portal — and stops entirely while
+    // the tab is in the background.
+    refetchInterval: 15_000,
+    refetchIntervalInBackground: false,
   })
   const unread = unreadData?.unread ?? 0
 
