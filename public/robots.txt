@@ -24,4 +24,4 @@ User-agent: ClaudeBot
 Allow: /
 Disallow: /portal
 
-Sitemap: https://autonomyfitness.press/sitemap.xml
+Sitemap: https://coach-auto.maktechgroups.com/sitemap.xml

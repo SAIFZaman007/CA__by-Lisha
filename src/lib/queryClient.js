@@ -40,4 +40,7 @@ export const keys = {
   tutorials: (params) => ['tutorials', params],
   tutorialFilters: ['tutorials', 'filters'],
   thread: ['messages', 'thread'],
+  gallery: (params) => ['gallery', params],
+  gallerySections: ['gallery', 'sections'],
+  galleryCategories: ['gallery', 'categories'],
 }

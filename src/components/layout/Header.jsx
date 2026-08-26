@@ -11,6 +11,10 @@ const { motion, AnimatePresence } = motionLib
 
 const LINKS = [
   { to: '/programs', label: 'Programmes' },
+  // Sits directly after Programmes on purpose. It is the page that answers
+  // "does this actually work", which is the question someone has right after
+  // they have seen the price.
+  { to: '/gallery', label: 'Gallery' },
   { to: '/about', label: 'About' },
   { to: '/tools', label: 'Calculators' },
   { to: '/contact', label: 'Contact' },

@@ -14,6 +14,7 @@ const ProgramDetail = lazy(() => import('@/pages/public/ProgramDetail'))
 const AboutPage = lazy(() => import('@/pages/public/AboutPage'))
 const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
 const ToolsPage = lazy(() => import('@/pages/public/ToolsPage'))
+const GalleryPage = lazy(() => import('@/pages/public/GalleryPage'))
 const LegalPage = lazy(() => import('@/pages/public/LegalPage'))
 const NotFound = lazy(() => import('@/pages/public/NotFound'))
 
@@ -82,6 +83,7 @@ export default function App() {
             <Route path="about" element={<AboutPage />} />
             <Route path="contact" element={<ContactPage />} />
             <Route path="tools" element={<ToolsPage />} />
+            <Route path="gallery" element={<GalleryPage />} />
             <Route path="privacy" element={<LegalPage doc="privacy" />} />
             <Route path="terms" element={<LegalPage doc="terms" />} />
           </Route>

@@ -5,23 +5,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0A0A0A" />
 
+    <!--
+      These defaults are not decoration.
+
+      This is a client-rendered app. Google executes JavaScript and will see
+      whatever `useSeo` sets per route, but most social crawlers and several
+      smaller search engines do not — they read the HTML as served and stop.
+      Everything below is therefore a complete, correct, standalone description
+      of the site, so an unrendered fetch still produces a sensible card and a
+      sensible search result. `useSeo` refines these per route; it does not
+      create them from nothing.
+    -->
     <title>Coach Auto | Online Strength Coaching &amp; Meal Plans — Autonomy Health and Fitness</title>
     <meta
       name="description"
-      content="Online strength training and nutrition coaching with Coach Auto. Personalised workout programmes, meal plans, progress tracking, sleep and cardio logging. Beginner to advanced."
+      content="Online strength training and nutrition coaching with Coach Auto. Personalised workout programmes, meal plans, progress tracking, sleep and cardio logging. Beginner to advanced, coached worldwide."
     />
+    <meta name="author" content="Coach Auto — Autonomy Health and Fitness" />
     <link rel="canonical" href="https://autonomyfitness.press/" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Coach Auto" />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content="Coach Auto | Online Strength Coaching &amp; Meal Plans" />
     <meta
       property="og:description"
       content="Personalised strength programmes, meal plans and progress tracking, coached one-to-one by Coach Auto."
     />
     <meta property="og:image" content="https://autonomyfitness.press/images/hero-portrait.png" />
+    <meta property="og:image:alt" content="Coach Auto — online strength and nutrition coaching" />
     <meta property="og:url" content="https://autonomyfitness.press/" />
+
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Coach Auto | Online Strength Coaching &amp; Meal Plans" />
+    <meta
+      name="twitter:description"
+      content="Personalised strength programmes, meal plans and progress tracking, coached one-to-one by Coach Auto."
+    />
+    <meta name="twitter:image" content="https://autonomyfitness.press/images/hero-portrait.png" />
+
+    <!--
+      Baseline structured data, served in the HTML rather than injected by the
+      app. This is the block that tells a search engine what this business *is*
+      before any JavaScript has run, and it is what an AI assistant reads when
+      someone asks it to recommend an online coach. Per-page schema (programmes,
+      FAQ, gallery) is added at runtime by `lib/structuredData.js`.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": ["Organization", "HealthAndBeautyBusiness"],
+            "@id": "https://autonomyfitness.press/#organization",
+            "name": "Coach Auto",
+            "legalName": "Autonomy Health and Fitness",
+            "url": "https://autonomyfitness.press",
+            "email": "coachauto2026@gmail.com",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "https://autonomyfitness.press/images/logo-lockup-light.png"
+            },
+            "image": "https://autonomyfitness.press/images/hero-portrait.png",
+            "description": "Online strength and nutrition coaching. Personalised training programmes, meal plans and progress tracking, delivered worldwide.",
+            "sameAs": ["https://www.instagram.com/coach.auto"],
+            "areaServed": { "@type": "Place", "name": "Worldwide" },
+            "knowsAbout": [
+              "Strength training",
+              "Online personal training",
+              "Nutrition coaching",
+              "Progressive overload",
+              "Body recomposition"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://autonomyfitness.press/#website",
+            "url": "https://autonomyfitness.press",
+            "name": "Coach Auto",
+            "inLanguage": "en",
+            "publisher": { "@id": "https://autonomyfitness.press/#organization" }
+          }
+        ]
+      }
+    </script>
 
     <link rel="icon" type="image/png" href="/images/logo-mark-light.png" />
     <link rel="apple-touch-icon" href="/images/logo-mark-light.png" />

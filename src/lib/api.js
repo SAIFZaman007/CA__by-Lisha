@@ -169,5 +169,36 @@ export const api = {
     thread: () => get('/messages/thread'),
     send: (body) => post('/messages/thread', body),
     unreadCount: () => get('/messages/unread-count'),
+
+    // Images go up on their own request, before the message that references
+    // them exists. A slow upload never blocks the text box, and a validation
+    // slip on the message never costs the client a re-upload.
+    //
+    // `onProgress` gets real bytes-sent from axios rather than a spinner: on a
+    // gym connection a silent upload is indistinguishable from a frozen page,
+    // and people respond to that by tapping send again.
+    uploadAttachment: (file, onProgress) => {
+      const body = new FormData()
+      body.append('file', file)
+      return http
+        .post('/messages/attachments', body, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 120000,
+          onUploadProgress: (event) => {
+            if (onProgress && event.total) {
+              onProgress(Math.round((event.loaded * 100) / event.total))
+            }
+          },
+        })
+        .then((r) => r.data)
+    },
+    discardAttachment: (id) => del(`/messages/attachments/${id}`),
+  },
+
+  gallery: {
+    list: (params) => get('/gallery', params),
+    sections: () => get('/gallery/sections'),
+    categories: () => get('/gallery/categories'),
+    get: (slug) => get(`/gallery/${slug}`),
   },
 }
