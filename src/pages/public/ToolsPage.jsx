@@ -1,4 +1,5 @@
-import { useSeo, breadcrumbSchema, faqSchema } from '@/lib/seo'
+import { useSeo, breadcrumbSchema } from '@/lib/seo'
+import { faqSchema } from '@/lib/structuredData'
 import { Section, SectionHeading } from '@/components/ui/Section'
 import { Calculators } from '@/components/sections/Calculators'
 import { Button } from '@/components/ui/Button'

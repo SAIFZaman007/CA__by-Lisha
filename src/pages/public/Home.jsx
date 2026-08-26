@@ -8,7 +8,8 @@ import { Faq } from '@/components/sections/Faq'
 import { CtaForm } from '@/components/sections/CtaForm'
 import { Calculators } from '@/components/sections/Calculators'
 import { Section, SectionHeading } from '@/components/ui/Section'
-import { useSeo, faqSchema } from '@/lib/seo'
+import { useSeo } from '@/lib/seo'
+import { faqSchema } from '@/lib/structuredData'
 import { FAQS } from '@/data/site'
 
 export default function Home() {
