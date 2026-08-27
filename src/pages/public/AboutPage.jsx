@@ -1,6 +1,7 @@
 import { Award, HeartPulse, ShieldCheck, Users } from 'lucide-react'
 
-import { useSeo, breadcrumbSchema } from '@/lib/seo'
+import { useSeo } from '@/lib/seo'
+import { breadcrumbSchema } from '@/lib/structuredData'
 import { Section, SectionHeading, motion, fadeUp, inView, stagger } from '@/components/ui/Section'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
