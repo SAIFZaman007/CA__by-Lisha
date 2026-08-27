@@ -94,7 +94,7 @@ export default function AboutPage() {
               aria-hidden="true"
             />
 
-            <figure className="relative aspect-992/775 overflow-hidden border border-ink-600 shadow-2xl shadow-black/60">
+            <figure className="relative aspect-970/775 overflow-hidden border border-ink-600 shadow-2xl shadow-black/60">
               <img
                 src="/images/Certification.png"
                 alt="Coach Auto Strength & Bodybuilding Coach CPD Accredited Certificate"
