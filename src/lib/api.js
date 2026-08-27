@@ -43,7 +43,11 @@ http.interceptors.response.use(
     if (status === 401 && !original?._retried && !isAuthRoute) {
       original._retried = true
       try {
-        refreshPromise ??= http.post('/auth/refresh').finally(() => {
+        // `audience=client` tells the API which of the two isolated session
+        // cookies to read — this app's, not the coach dashboard's. See
+        // REFRESH_COOKIE_NAMES in the backend's auth endpoint for why the two
+        // apps no longer share one cookie slot.
+        refreshPromise ??= http.post('/auth/refresh?audience=client').finally(() => {
           refreshPromise = null
         })
         const { data } = await refreshPromise
@@ -79,7 +83,7 @@ export const api = {
   auth: {
     register: (body) => post('/auth/register', body),
     login: (body) => post('/auth/login', body),
-    refresh: () => post('/auth/refresh'),
+    refresh: () => post('/auth/refresh?audience=client'),
     logout: () => post('/auth/logout'),
     me: () => get('/auth/me'),
     forgotPassword: (body) => post('/auth/forgot-password', body),
