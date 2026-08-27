@@ -7,7 +7,8 @@ import { Skeleton } from '@/components/ui/Card'
 import { CtaForm } from '@/components/sections/CtaForm'
 import { api } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
-import { useSeo, breadcrumbSchema } from '@/lib/seo'
+import { useSeo } from '@/lib/seo'
+import { breadcrumbSchema } from '@/lib/structuredData'
 
 export default function ProgramsPage() {
   useSeo({
