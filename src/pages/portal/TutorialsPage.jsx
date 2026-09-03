@@ -122,7 +122,51 @@ function TutorialCard({ tutorial, onOpen }) {
 
 function PlayerDialog({ tutorial, onClose }) {
   const dialogRef = useRef(null)
+  const videoRef = useRef(null)
   const src = tutorial ? embedUrl(tutorial) : null
+
+  // The signed URL on a direct-upload video is long-lived (an hour — see
+  // `MEDIA_VIDEO_URL_TTL_SECONDS` on the backend) but it is still minted once,
+  // at the moment the tutorial list loaded, and a <video> tag has no way to
+  // ask for a new one on its own. Someone who leaves a clip paused past that
+  // hour, or scrubs back into it after stepping away, will hit a real
+  // expired-link 401 on the next range request — not a bug so much as the
+  // unavoidable shape of "media elements cannot send an Authorization
+  // header." Rather than let that show up as a dead player with no way
+  // forward, one retry: fetch this tutorial again (which mints a fresh URL)
+  // and swap it in. If the retry itself fails, the person sees the normal
+  // error state and can just reopen the clip.
+  //
+  // `videoUrl` and `retriedRef` both start fresh from `tutorial` on every
+  // mount rather than syncing via an effect — the parent renders this
+  // component with `key={playing?.id}` (see the call site below), so a
+  // different tutorial is a full remount, and `useState`'s initial value runs
+  // exactly once per mount by definition. No effect needed to keep the two in
+  // step; there is only ever one `tutorial` this instance will ever see.
+  const [videoUrl, setVideoUrl] = useState(tutorial?.video_url ?? null)
+  const [refreshing, setRefreshing] = useState(false)
+  const retriedRef = useRef(false)
+
+  async function onVideoError() {
+    if (retriedRef.current || !tutorial) return
+    retriedRef.current = true
+    setRefreshing(true)
+    try {
+      const fresh = await api.tutorials.get(tutorial.id)
+      const resumeAt = videoRef.current?.currentTime ?? 0
+      setVideoUrl(fresh.video_url)
+      // Wait for the new src to actually mount before seeking — setting
+      // currentTime on the old, now-unmounted element does nothing.
+      requestAnimationFrame(() => {
+        if (videoRef.current) videoRef.current.currentTime = resumeAt
+      })
+    } catch {
+      // Genuinely gone (deleted, unpublished) — leave the browser's own
+      // "can't play" state showing rather than retrying forever.
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   useEffect(() => {
     if (!tutorial) return undefined
@@ -183,9 +227,23 @@ function PlayerDialog({ tutorial, onClose }) {
             />
           ) : (
             /* A direct MP4 link plays natively — no third-party player needed. */
-            <video src={tutorial.video_url} controls playsInline className="size-full">
-              <track kind="captions" />
-            </video>
+            <div className="relative size-full">
+              <video
+                ref={videoRef}
+                src={videoUrl}
+                controls
+                playsInline
+                className="size-full"
+                onError={onVideoError}
+              >
+                <track kind="captions" />
+              </video>
+              {refreshing && (
+                <div className="pointer-events-none absolute inset-0 grid place-items-center bg-black/60">
+                  <p className="text-sm text-chalk-200">Reconnecting…</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
 
@@ -323,7 +381,7 @@ export default function TutorialsPage() {
         </Card>
       )}
 
-      <PlayerDialog tutorial={playing} onClose={() => setPlaying(null)} />
+      <PlayerDialog key={playing?.id} tutorial={playing} onClose={() => setPlaying(null)} />
     </>
   )
 }
