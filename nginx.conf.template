@@ -1,44 +1,25 @@
-# Coach Auto dashboard — static SPA + reverse proxy to the API.
+# Coach Auto — client portal. Static SPA + reverse proxy to the API.
 #
-# The proxy is what keeps the refresh cookie first-party. Do not remove it in
-# favour of pointing the browser straight at the API domain unless you have
-# also switched the backend to SameSite=None cookies.
+# --- Which deployment shape is this? -----------------------------------------
 #
-# --- Nothing in this file may name a host --------------------------------------
+# Two are supported, and the difference matters more than it looks.
 #
-# Every origin below is substituted at container start from the environment
-# (${API_ORIGIN}, ${API_UPSTREAM}; see the Dockerfile), exactly as in the client
-# portal's template. A hostname baked into a built image is a hostname that
-# silently rots: this file previously carried a literal API origin in `img-src`,
-# and when it stopped matching the API's real address every message attachment
-# in the inbox was refused by the browser before a request was made. A
-# CSP-blocked image reports as an ordinary load error, so the dashboard showed
-# "Tap to retry" on every photo and the API log showed nothing at all.
-#
-# Two deployment shapes are supported.
-#
-#   Same-origin. The browser talks only to this server; `/api/` proxies to the
-#   backend. Leave VITE_API_URL blank at build time and API_ORIGIN blank here.
-#   'self' covers the media and the CSP needs nothing added.
+#   Same-origin. The browser talks only to this server; `/api/` below proxies
+#   to the backend. Leave VITE_API_URL blank and PUBLIC_API_URL blank on the
+#   API. Cookies stay first-party, there is no CORS, and the CSP can stay on
+#   'self'. This is the simpler of the two and the one to prefer — but it only
+#   works if `$api_upstream` below actually resolves to the backend container.
 #
 #   Split-origin. The browser talks to the API on its own hostname. Set
-#   VITE_API_URL at build time and API_ORIGIN here to the same value, scheme
-#   included.
+#   VITE_API_URL here and PUBLIC_API_URL on the API to the same value, and add
+#   that origin to the CSP directives marked below.
 #
-# The API derives its media origin from the request it is answering, so it
-# follows whichever shape is in use without a second setting to keep in sync.
-# API_ORIGIN only ever has to match what the browser is actually told to call.
-
-# nginx templates land in the http context, so this map is legal here. It
-# exists because the block below must forward the *browser's* protocol, not
-# this hop's. Coolify terminates TLS in front of this container, so `$scheme`
-# is http on the inside; forwarding that verbatim tells the API it is being
-# reached over http, and the media URLs it hands back are then blocked as mixed
-# content on an https page.
-map $http_x_forwarded_proto $ca_forwarded_proto {
-    default $scheme;
-    "~^https?$" $http_x_forwarded_proto;
-}
+# The failure that produced this file was a half-and-half: VITE_API_URL pointed
+# at the API's own hostname while the API still handed out root-relative media
+# paths. JSON requests went to the API and worked; every <img> and <video> src
+# resolved against *this* origin instead, landed here, and was proxied to an
+# upstream that does not answer — which is where the 502s came from. Pick one
+# shape and configure both halves of it.
 
 server {
     listen 8080;
@@ -46,22 +27,25 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # An internal tool: keep it out of indexes and out of frames.
-    add_header X-Robots-Tag "noindex, nofollow" always;
+    # Security headers
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "DENY" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
 
-    # frame-src allows the hosted tutorial preview players; the ytimg/vimeocdn
-    # entries in img-src are their thumbnails.
+    # `img-src` keeps `blob:` because the message composer previews a picked
+    # file with URL.createObjectURL before it is uploaded.
     #
-    # ${API_ORIGIN} appears in img-src, media-src *and* connect-src. These are
-    # separate directives and a wildcard on one covers nothing on another —
-    # `media-src https:` was once wide enough to carry the tutorial player by
-    # accident while img-src silently refused every attachment in the inbox.
-    # If the API is added to one of these it belongs in all three.
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://i.ytimg.com https://i.vimeocdn.com ${API_ORIGIN}; media-src 'self' blob: ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+    # SPLIT-ORIGIN: when the API answers on its own hostname, private media is
+    # cross-origin and 'self' no longer covers it. A CSP-blocked image fails
+    # silently apart from a console line, so this is easy to miss. The API
+    # origin below must match PUBLIC_API_URL on the backend exactly, scheme
+    # included. On a same-origin deployment it is harmless to leave in place.
+    # ${API_ORIGIN} is substituted at container start from the environment (see
+    # the Dockerfile), so the media origin is configured once rather than baked
+    # into an image. It must equal PUBLIC_API_URL on the backend. Empty is fine
+    # and correct for a same-origin deployment — 'self' already covers it.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${API_ORIGIN}; media-src 'self' blob: ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
 
     gzip on;
     gzip_vary on;
@@ -70,54 +54,78 @@ server {
 
     # --- API proxy ------------------------------------------------------------
     #
-    # `^~` stops nginx testing the static-file regex below against API paths.
-    # Regex locations are evaluated before prefix ones, so without it a request
-    # whose path ends in an image extension would be served from the static
-    # root instead of reaching the backend.
+    # `^~` is load-bearing. nginx tests regex locations before prefix ones, so
+    # without it the `\.(png|jpe?g|...)$` block further down would capture any
+    # API path ending in an image extension and try to serve it from the static
+    # root. `^~` stops the regex search once this prefix matches, which keeps
+    # every /api/ request on the proxy where it belongs.
     location ^~ /api/ {
         # Resolve the upstream at request time via Docker's internal DNS, so a
         # backend that is slow to start does not stop nginx from booting.
         #
-        # A wrong name here is indistinguishable from a dead backend: nginx has
-        # nothing to proxy to and answers 502. Verify it against the backend's
-        # real service name on this network before assuming it is correct — in
-        # Coolify the service name is not always the one in the compose file.
+        # If this name is wrong, nginx has nothing to proxy to and answers 502.
+        # Confirm it against the backend's actual service name on this network
+        # (`docker network inspect <network>`) rather than assuming — in Coolify
+        # the service name is not always the one written in the compose file.
         resolver 127.0.0.11 valid=30s ipv6=off;
         set $api_upstream ${API_UPSTREAM};
 
         proxy_pass $api_upstream;
         proxy_http_version 1.1;
-
-        # `Host` is passed through unchanged, and the API reads it to decide
-        # what origin to advertise its media at. It is validated against the
-        # backend's trusted-host list before use, so a bogus value degrades to
-        # a root-relative URL rather than being trusted.
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Proto $ca_forwarded_proto;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header Connection "";
 
-        # The coach's own preview player seeks through uploaded clips, so range
-        # requests have to survive the hop in both directions.
+        # Range requests must reach the backend untouched. The tutorial player
+        # seeks by asking for byte ranges and the API answers 206 with a
+        # Content-Range; a proxy that swallows either end of that exchange
+        # turns scrubbing into a video that will not seek.
         proxy_set_header Range $http_range;
         proxy_set_header If-Range $http_if_range;
 
+        # Stream both directions rather than buffering. With buffering on,
+        # nginx spools a whole response to a temp file before forwarding a
+        # byte, which delays the first frame of every video and turns a large
+        # upload into a disk write on the proxy as well as on the API.
         proxy_buffering off;
         proxy_request_buffering off;
 
-        # This is the side that uploads tutorial videos. The old 12 MB ceiling
-        # rejected every real upload with a 413 before the request reached the
-        # API — which is why MAX_VIDEO_UPLOAD_MB appeared to be ignored in
-        # production and honoured locally, where Vite's dev proxy has no such
-        # limit. Keep this at or above MAX_VIDEO_UPLOAD_MB.
+        # A tutorial upload is legitimately large and legitimately slow. This
+        # ceiling must stay at or above MAX_VIDEO_UPLOAD_MB on the API,
+        # otherwise nginx rejects the upload with a 413 the backend never sees
+        # and never gets to explain. 512 MB limit, plus multipart framing.
         client_max_body_size 550M;
         client_body_timeout 600s;
 
+        # Long enough for a coach on gym wi-fi to finish pushing a video.
         proxy_connect_timeout 10s;
         proxy_send_timeout 600s;
         proxy_read_timeout 600s;
+    }
+
+    # Search engines fetch these two from the site root, not from the API.
+    #
+    # Both are generated by the backend rather than shipped as static files,
+    # because both list database-backed content — the live coaching tiers, the
+    # published gallery — and a file baked into the frontend build goes stale
+    # the first time the coach publishes a photo. Proxying keeps the canonical
+    # URL (`/sitemap.xml`) while the content stays current.
+    location = /sitemap.xml {
+        resolver 127.0.0.11 valid=30s ipv6=off;
+        set $seo_upstream ${API_UPSTREAM};
+        proxy_pass $seo_upstream/api/v1/meta/sitemap.xml;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /robots.txt {
+        resolver 127.0.0.11 valid=30s ipv6=off;
+        set $seo_upstream ${API_UPSTREAM};
+        proxy_pass $seo_upstream/api/v1/meta/robots.txt;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 
     location /assets/ {
@@ -126,7 +134,8 @@ server {
         access_log off;
     }
 
-    # Static build artefacts only — `^~ /api/` above is matched first.
+    # Static build artefacts only. `^~ /api/` above wins before nginx reaches
+    # this regex, so an API route can never be mistaken for a file on disk.
     location ~* \.(png|jpe?g|webp|svg|ico|woff2?)$ {
         expires 30d;
         add_header Cache-Control "public";
