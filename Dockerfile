@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
-# Baked in at build time — Vite inlines VITE_* variables into the bundle.
+
 ARG VITE_API_URL=""
 ARG VITE_SITE_URL="https://coach-auto.maktechgroups.com"
 ARG VITE_GA_MEASUREMENT_ID=""
@@ -20,7 +20,13 @@ RUN npm run build
 FROM nginx:1.27-alpine AS runtime
 
 RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/coach-auto.conf
+
+ENV NGINX_ENVSUBST_FILTER="^(API_ORIGIN|API_UPSTREAM)$$"
+
+ENV API_ORIGIN=""
+ENV API_UPSTREAM="http://api:8000"
+
+COPY nginx.conf.template /etc/nginx/templates/coach-auto-frontend.conf.template
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
