@@ -1,19 +1,39 @@
-import { useParams, Link } from 'react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useParams, useNavigate, Link } from 'react-router'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { ArrowLeft, Check } from 'lucide-react'
 import { Section, motion, fadeUp } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
 import { Skeleton, EmptyState } from '@/components/ui/Card'
 import { CtaForm } from '@/components/sections/CtaForm'
-import { api } from '@/lib/api'
+import { api, errorMessage } from '@/lib/api'
+import { useAuth } from '@/store/auth'
+import { toast } from '@/components/ui/Toast'
 import { useSeo } from '@/lib/seo'
 
 export default function ProgramDetail() {
   const { slug } = useParams()
+  const navigate = useNavigate()
+  const authStatus = useAuth((s) => s.status)
   const { data: program, isLoading, isError } = useQuery({
     queryKey: ['program', slug],
     queryFn: () => api.site.program(slug),
   })
+
+  const subscribe = useMutation({
+    mutationFn: () => api.billing.checkout(program.id),
+    onSuccess: (session) => {
+      window.location.href = session.url
+    },
+    onError: (error) => toast.error(errorMessage(error, 'Could not start checkout.')),
+  })
+
+  function handleSubscribeClick() {
+    if (authStatus !== 'authenticated') {
+      navigate('/login', { state: { from: `/programs/${slug}` } })
+      return
+    }
+    subscribe.mutate()
+  }
 
   useSeo({
     title: program?.name ?? 'Coaching programme',
@@ -113,6 +133,16 @@ export default function ProgramDetail() {
               </dl>
               <Button to="/contact" fullWidth size="lg" className="mt-7">
                 Apply for this level
+              </Button>
+              <Button
+                onClick={handleSubscribeClick}
+                loading={subscribe.isPending}
+                variant="outline"
+                fullWidth
+                size="lg"
+                className="mt-3"
+              >
+                Subscribe now
               </Button>
             </aside>
           </div>

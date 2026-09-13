@@ -111,6 +111,14 @@ export const api = {
     cardioBurn: (body) => post('/calculators/cardio-burn', body),
     reference: () => get('/calculators/reference'),
   },
+  billing: {
+    checkout: (programId) => post('/billing/checkout', { program_id: programId }),
+    checkoutStatus: (sessionId) => get(`/billing/checkout/${sessionId}`),
+    entitlement: () => get('/billing/entitlement'),
+    history: () => get('/billing/history'),
+    portal: () => post('/billing/portal'),
+    cancel: () => post('/billing/cancel'),
+  },
   dashboard: { get: () => get('/dashboard') },
   workouts: {
     plan: () => get('/workouts/plan'),

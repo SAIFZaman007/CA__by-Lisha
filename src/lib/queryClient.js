@@ -20,6 +20,7 @@ export const queryClient = new QueryClient({
 export const keys = {
   dashboard: ['dashboard'],
   profile: ['profile'],
+  billingEntitlement: ['billing', 'entitlement'],
   programs: ['programs'],
   testimonials: ['testimonials'],
   workoutPlan: ['workouts', 'plan'],

@@ -229,11 +229,23 @@ function PasswordForm() {
   )
 }
 
+function formatMoney(cents, currency) {
+  if (cents == null) return null
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: (currency || 'usd').toUpperCase(),
+  }).format(cents / 100)
+}
+
 export default function ProfilePage() {
   const user = useAuth((s) => s.user)
   const { data: profile, isLoading } = useQuery({
     queryKey: keys.profile,
     queryFn: api.users.profile,
+  })
+  const { data: entitlement, isLoading: entitlementLoading } = useQuery({
+    queryKey: keys.billingEntitlement,
+    queryFn: api.billing.entitlement,
   })
 
   const units = profile?.unit_system ?? 'imperial'
@@ -304,6 +316,50 @@ export default function ProfilePage() {
                   </div>
                 ))}
               </dl>
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title="Billing" />
+            <CardBody>
+              {entitlementLoading ? (
+                <Skeleton className="h-32 w-full" />
+              ) : entitlement?.subscription ? (
+                <dl className="space-y-3 text-sm">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-chalk-500">Plan</dt>
+                    <dd className="text-right font-medium text-chalk-50">
+                      {entitlement.program?.name ?? '—'}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-chalk-500">Amount paid</dt>
+                    <dd className="text-right font-medium text-chalk-50">
+                      {formatMoney(entitlement.subscription.price_cents, entitlement.subscription.currency)}
+                      {' / '}
+                      {entitlement.subscription.billing_period}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-chalk-500">Subscribed since</dt>
+                    <dd className="text-right font-medium text-chalk-50">
+                      {entitlement.subscription.started_at
+                        ? new Date(entitlement.subscription.started_at).toLocaleDateString()
+                        : '—'}
+                    </dd>
+                  </div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-chalk-500">Status</dt>
+                    <dd className="text-right font-medium text-chalk-50 capitalize">
+                      {entitlement.subscription.cancel_at_period_end
+                        ? 'Cancels at period end'
+                        : entitlement.subscription.status}
+                    </dd>
+                  </div>
+                </dl>
+              ) : (
+                <p className="text-sm text-chalk-500">No active subscription.</p>
+              )}
             </CardBody>
           </Card>
         </div>

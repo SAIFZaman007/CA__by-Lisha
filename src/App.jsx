@@ -16,6 +16,8 @@ const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
 const ToolsPage = lazy(() => import('@/pages/public/ToolsPage'))
 const GalleryPage = lazy(() => import('@/pages/public/GalleryPage'))
 const LegalPage = lazy(() => import('@/pages/public/LegalPage'))
+const CheckoutSuccess = lazy(() => import('@/pages/public/CheckoutSuccess'))
+const CheckoutCancelled = lazy(() => import('@/pages/public/CheckoutCancelled'))
 const NotFound = lazy(() => import('@/pages/public/NotFound'))
 
 const Login = lazy(() => import('@/pages/auth/Login'))
@@ -107,6 +109,8 @@ export default function App() {
           />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/checkout/cancelled" element={<CheckoutCancelled />} />
 
           {/* Client portal */}
           <Route
