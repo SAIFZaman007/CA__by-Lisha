@@ -1,18 +1,39 @@
+import { useEffect, useRef, useState } from 'react'
 import * as motionLib from 'motion/react'
 import { cn } from '@/lib/utils'
-import { fadeUp, inView, stagger } from '@/lib/motion'
+import { REVEAL_FAILSAFE_MS, fadeUp, inView, stagger } from '@/lib/motion'
 
-const { motion } = motionLib
+const { motion, useInView, useReducedMotion } = motionLib
 
 export function Container({ className, children }) {
   return <div className={cn('mx-auto w-full max-w-7xl px-5 sm:px-8', className)}>{children}</div>
 }
 
-/**
- * A page section with the shared scroll reveal already wired up.
- * `tone="raised"` lifts the background one step for alternating bands.
- */
+export function useReveal() {
+  const ref = useRef(null)
+  const reducedMotion = useReducedMotion()
+  const observed = useInView(ref, { once: true, amount: 0 })
+  const [failsafe, setFailsafe] = useState(false)
+
+  useEffect(() => {
+    if (reducedMotion) {
+      setFailsafe(true)
+      return undefined
+    }
+    const timer = setTimeout(() => setFailsafe(true), REVEAL_FAILSAFE_MS)
+    return () => clearTimeout(timer)
+  }, [reducedMotion])
+
+  return {
+    ref,
+    initial: reducedMotion ? false : 'hidden',
+    animate: observed || failsafe ? 'visible' : 'hidden',
+  }
+}
+
 export function Section({ id, tone = 'base', className, children }) {
+  const reveal = useReveal()
+
   return (
     <section
       id={id}
@@ -24,7 +45,7 @@ export function Section({ id, tone = 'base', className, children }) {
       )}
     >
       <Container>
-        <motion.div variants={stagger()} {...inView}>
+        <motion.div ref={reveal.ref} variants={stagger()} initial={reveal.initial} animate={reveal.animate}>
           {children}
         </motion.div>
       </Container>
@@ -32,18 +53,6 @@ export function Section({ id, tone = 'base', className, children }) {
   )
 }
 
-/**
- * Section heading. The eyebrow carries a red stress line — the one repeated
- * flourish on the site, echoing a loaded bar.
- */
-/**
- * Section heading.
- *
- * `title` renders in white and `accent` continues it in brand red on its own
- * line. Splitting the headline this way — rather than embedding markup in a
- * string — keeps the copy translatable and means every section emphasises the
- * same way. Passing only `title` leaves the heading plain.
- */
 export function SectionHeading({
   eyebrow,
   title,

@@ -1,10 +1,3 @@
-/**
- * Shared motion presets.
- *
- * One vocabulary across the site so nothing feels bolted on: content rises a
- * short distance and settles. Nothing bounces, nothing spins.
- */
-
 export const EASE = [0.22, 1, 0.36, 1]
 
 export const fadeUp = {
@@ -28,12 +21,13 @@ export const scaleIn = {
   visible: { opacity: 1, scale: 1, transition: { duration: 0.4, ease: EASE } },
 }
 
-/** Standard scroll reveal props — fires once, slightly before the element lands. */
 export const inView = {
   initial: 'hidden',
   whileInView: 'visible',
-  viewport: { once: true, margin: '-80px' },
+  viewport: { once: true, amount: 0 },
 }
+
+export const REVEAL_FAILSAFE_MS = 700
 
 export const pageTransition = {
   initial: { opacity: 0, y: 8 },

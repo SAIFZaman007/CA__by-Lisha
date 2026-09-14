@@ -1,41 +1,42 @@
-import { lazy, Suspense, useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
 
 import { useAuth } from '@/store/auth'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { PortalLayout } from '@/components/portal/PortalLayout'
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 import { ToastHost } from '@/components/ui/Toast'
+import { clearChunkReloadFlag, lazyWithRetry } from '@/lib/lazyWithRetry'
 import Home from '@/pages/public/Home'
 
-// Lazy-loaded routes
-const ProgramsPage = lazy(() => import('@/pages/public/ProgramsPage'))
-const ProgramDetail = lazy(() => import('@/pages/public/ProgramDetail'))
-const AboutPage = lazy(() => import('@/pages/public/AboutPage'))
-const ContactPage = lazy(() => import('@/pages/public/ContactPage'))
-const ToolsPage = lazy(() => import('@/pages/public/ToolsPage'))
-const GalleryPage = lazy(() => import('@/pages/public/GalleryPage'))
-const LegalPage = lazy(() => import('@/pages/public/LegalPage'))
-const CheckoutSuccess = lazy(() => import('@/pages/public/CheckoutSuccess'))
-const CheckoutCancelled = lazy(() => import('@/pages/public/CheckoutCancelled'))
-const NotFound = lazy(() => import('@/pages/public/NotFound'))
+// Lazy-loaded routes.
+const ProgramsPage = lazyWithRetry(() => import('@/pages/public/ProgramsPage'))
+const ProgramDetail = lazyWithRetry(() => import('@/pages/public/ProgramDetail'))
+const AboutPage = lazyWithRetry(() => import('@/pages/public/AboutPage'))
+const ContactPage = lazyWithRetry(() => import('@/pages/public/ContactPage'))
+const ToolsPage = lazyWithRetry(() => import('@/pages/public/ToolsPage'))
+const GalleryPage = lazyWithRetry(() => import('@/pages/public/GalleryPage'))
+const LegalPage = lazyWithRetry(() => import('@/pages/public/LegalPage'))
+const CheckoutSuccess = lazyWithRetry(() => import('@/pages/public/CheckoutSuccess'))
+const CheckoutCancelled = lazyWithRetry(() => import('@/pages/public/CheckoutCancelled'))
+const NotFound = lazyWithRetry(() => import('@/pages/public/NotFound'))
 
-const Login = lazy(() => import('@/pages/auth/Login'))
-const Register = lazy(() => import('@/pages/auth/Register'))
-const ForgotPassword = lazy(() => import('@/pages/auth/ForgotPassword'))
-const ResetPassword = lazy(() => import('@/pages/auth/ResetPassword'))
+const Login = lazyWithRetry(() => import('@/pages/auth/Login'))
+const Register = lazyWithRetry(() => import('@/pages/auth/Register'))
+const ForgotPassword = lazyWithRetry(() => import('@/pages/auth/ForgotPassword'))
+const ResetPassword = lazyWithRetry(() => import('@/pages/auth/ResetPassword'))
 
-const Dashboard = lazy(() => import('@/pages/portal/Dashboard'))
-const WorkoutPage = lazy(() => import('@/pages/portal/WorkoutPage'))
-const MealPlanPage = lazy(() => import('@/pages/portal/MealPlanPage'))
-const ProgressPage = lazy(() => import('@/pages/portal/ProgressPage'))
-const WellnessPage = lazy(() => import('@/pages/portal/WellnessPage'))
-const TutorialsPage = lazy(() => import('@/pages/portal/TutorialsPage'))
-const CalculatorsPage = lazy(() => import('@/pages/portal/CalculatorsPage'))
-const MessagesPage = lazy(() => import('@/pages/portal/MessagesPage'))
-const ProfilePage = lazy(() => import('@/pages/portal/ProfilePage'))
+const Dashboard = lazyWithRetry(() => import('@/pages/portal/Dashboard'))
+const WorkoutPage = lazyWithRetry(() => import('@/pages/portal/WorkoutPage'))
+const MealPlanPage = lazyWithRetry(() => import('@/pages/portal/MealPlanPage'))
+const ProgressPage = lazyWithRetry(() => import('@/pages/portal/ProgressPage'))
+const WellnessPage = lazyWithRetry(() => import('@/pages/portal/WellnessPage'))
+const TutorialsPage = lazyWithRetry(() => import('@/pages/portal/TutorialsPage'))
+const CalculatorsPage = lazyWithRetry(() => import('@/pages/portal/CalculatorsPage'))
+const MessagesPage = lazyWithRetry(() => import('@/pages/portal/MessagesPage'))
+const ProfilePage = lazyWithRetry(() => import('@/pages/portal/ProfilePage'))
 
-/** Sends the browser back to the top whenever the route changes. */
 function ScrollToTop() {
   const { pathname } = useLocation()
 
@@ -44,6 +45,11 @@ function ScrollToTop() {
   }, [pathname])
 
   return null
+}
+
+function RouteBoundary({ children }) {
+  const { pathname } = useLocation()
+  return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
 }
 
 function RequireAuth({ children }) {
@@ -71,70 +77,76 @@ export default function App() {
     bootstrap()
   }, [bootstrap])
 
+  useEffect(() => {
+    clearChunkReloadFlag()
+  }, [])
+
   return (
     <>
       <ScrollToTop />
       <ToastHost />
-      <Suspense fallback={<FullPageSpinner />}>
-        <Routes>
-          {/* Public site */}
-          <Route element={<PublicLayout />}>
-            <Route index element={<Home />} />
-            <Route path="programs" element={<ProgramsPage />} />
-            <Route path="programs/:slug" element={<ProgramDetail />} />
-            <Route path="about" element={<AboutPage />} />
-            <Route path="contact" element={<ContactPage />} />
-            <Route path="tools" element={<ToolsPage />} />
-            <Route path="gallery" element={<GalleryPage />} />
-            <Route path="privacy" element={<LegalPage doc="privacy" />} />
-            <Route path="terms" element={<LegalPage doc="terms" />} />
-          </Route>
+      <RouteBoundary>
+        <Suspense fallback={<FullPageSpinner />}>
+          <Routes>
+            {/* Public site */}
+            <Route element={<PublicLayout />}>
+              <Route index element={<Home />} />
+              <Route path="programs" element={<ProgramsPage />} />
+              <Route path="programs/:slug" element={<ProgramDetail />} />
+              <Route path="about" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
+              <Route path="tools" element={<ToolsPage />} />
+              <Route path="gallery" element={<GalleryPage />} />
+              <Route path="privacy" element={<LegalPage doc="privacy" />} />
+              <Route path="terms" element={<LegalPage doc="terms" />} />
+            </Route>
 
-          {/* Account */}
-          <Route
-            path="/login"
-            element={
-              <RedirectIfSignedIn>
-                <Login />
-              </RedirectIfSignedIn>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <RedirectIfSignedIn>
-                <Register />
-              </RedirectIfSignedIn>
-            }
-          />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/checkout/cancelled" element={<CheckoutCancelled />} />
+            {/* Account */}
+            <Route
+              path="/login"
+              element={
+                <RedirectIfSignedIn>
+                  <Login />
+                </RedirectIfSignedIn>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <RedirectIfSignedIn>
+                  <Register />
+                </RedirectIfSignedIn>
+              }
+            />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/checkout/success" element={<CheckoutSuccess />} />
+            <Route path="/checkout/cancelled" element={<CheckoutCancelled />} />
 
-          {/* Client portal */}
-          <Route
-            path="/portal"
-            element={
-              <RequireAuth>
-                <PortalLayout />
-              </RequireAuth>
-            }
-          >
-            <Route index element={<Dashboard />} />
-            <Route path="workout" element={<WorkoutPage />} />
-            <Route path="meal-plan" element={<MealPlanPage />} />
-            <Route path="progress" element={<ProgressPage />} />
-            <Route path="sleep-cardio" element={<WellnessPage />} />
-            <Route path="tutorials" element={<TutorialsPage />} />
-            <Route path="calculators" element={<CalculatorsPage />} />
-            <Route path="messages" element={<MessagesPage />} />
-            <Route path="profile" element={<ProfilePage />} />
-          </Route>
+            {/* Client portal */}
+            <Route
+              path="/portal"
+              element={
+                <RequireAuth>
+                  <PortalLayout />
+                </RequireAuth>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="workout" element={<WorkoutPage />} />
+              <Route path="meal-plan" element={<MealPlanPage />} />
+              <Route path="progress" element={<ProgressPage />} />
+              <Route path="sleep-cardio" element={<WellnessPage />} />
+              <Route path="tutorials" element={<TutorialsPage />} />
+              <Route path="calculators" element={<CalculatorsPage />} />
+              <Route path="messages" element={<MessagesPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Suspense>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </RouteBoundary>
     </>
   )
 }
