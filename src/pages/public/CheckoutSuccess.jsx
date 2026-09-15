@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { CheckCircle2, XCircle } from 'lucide-react'
 
 import { api, errorMessage } from '@/lib/api'
@@ -12,18 +13,42 @@ import { FullPageSpinner, Spinner } from '@/components/ui/Spinner'
  * Where Stripe sends the browser back after a completed Checkout session.
  *
  * The redirect itself proves nothing — anyone can open this URL without
- * paying — so this page asks the backend to verify the session against
- * Stripe before showing anything as "paid". It also doesn't assume the
- * visitor is still signed in: the trip through Stripe's domain and back can
- * outlive the in-memory access token, so a cold session shows a login
- * prompt instead of an error.
+ * paying — so this page asks the backend to verify the session against Stripe
+ * before showing anything as "paid". The backend additionally checks that the
+ * signed-in user is the one the session was opened for.
+ *
+ * Three things this page is responsible for, in order:
+ *
+ *   1. **Wait for the session to come back.** The round trip through Stripe's
+ *      domain destroys the in-memory access token, so on return the app is
+ *      briefly `loading` while the refresh cookie mints a new one. Calling the
+ *      API during that window gets a 401 and shows a payment failure to
+ *      someone who has just paid. Nothing happens until `authStatus` settles.
+ *
+ *   2. **Confirm and provision.** The confirm endpoint reconciles the session
+ *      into the local database when it is paid, so the plan is live whether or
+ *      not the webhook has landed yet. See `_reconcile_checkout` on the API
+ *      for why both paths exist.
+ *
+ *   3. **Poll briefly, then invalidate.** If the confirm call comes back paid
+ *      but not yet provisioned — Stripe still finalising, or a webhook and this
+ *      request racing — it retries a few times rather than declaring success on
+ *      a dashboard that will say "no plan yet". Once provisioned, the cached
+ *      entitlement and billing queries are cleared, so the portal renders the
+ *      new plan instead of the stale pre-purchase copy the user is about to
+ *      navigate into.
  */
+
+const MAX_ATTEMPTS = 5
+const RETRY_MS = 1500
+
 export default function CheckoutSuccess() {
   const [params] = useSearchParams()
   const sessionId = params.get('session_id')
   const authStatus = useAuth((s) => s.status)
+  const queryClient = useQueryClient()
 
-  const [state, setState] = useState('loading') // loading | paid | pending | error
+  const [state, setState] = useState('loading') 
   const [entitlement, setEntitlement] = useState(null)
   const [message, setMessage] = useState('')
 
@@ -31,42 +56,64 @@ export default function CheckoutSuccess() {
     if (!sessionId) {
       setState('error')
       setMessage('No checkout session was given.')
-      return
+      return undefined
     }
-    if (authStatus === 'loading') return // wait for the silent session refresh
+
+    // Wait for the silent refresh to finish before deciding anything.
+    if (authStatus === 'loading') return undefined
+
+    if (authStatus === 'anonymous') {
+      setState('signin')
+      return undefined
+    }
 
     let cancelled = false
+    let timer = null
 
-    async function run() {
+    async function run(attempt = 1) {
       try {
         const result = await api.billing.checkoutStatus(sessionId)
         if (cancelled) return
 
         if (!result.paid) {
           setState('pending')
+          if (attempt < MAX_ATTEMPTS) {
+            timer = setTimeout(() => run(attempt + 1), RETRY_MS)
+          }
+          return
+        }
+
+        // Paid, but provisioning may still be catching up.
+        if (!result.synced && attempt < MAX_ATTEMPTS) {
+          setState('pending')
+          timer = setTimeout(() => run(attempt + 1), RETRY_MS)
           return
         }
 
         setState('paid')
+
+        queryClient.invalidateQueries({ queryKey: ['billing'] })
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+
         try {
           const data = await api.billing.entitlement()
           if (!cancelled) setEntitlement(data)
         } catch {
-          /* not signed in here — the login CTA covers it */
+          /* the CTA below still works without the summary card */
         }
       } catch (err) {
-        if (!cancelled) {
-          setState('error')
-          setMessage(errorMessage(err, "We couldn't confirm this payment."))
-        }
+        if (cancelled) return
+        setState('error')
+        setMessage(errorMessage(err, "We couldn't confirm this payment."))
       }
     }
 
     run()
     return () => {
       cancelled = true
+      if (timer) clearTimeout(timer)
     }
-  }, [sessionId, authStatus])
+  }, [sessionId, authStatus, queryClient])
 
   if (state === 'loading') return <FullPageSpinner label="Confirming your payment" />
 
@@ -109,29 +156,34 @@ export default function CheckoutSuccess() {
             </Card>
           )}
 
-          {authStatus === 'authenticated' ? (
-            <Button to="/portal" size="lg" fullWidth>
-              Go to your dashboard
-            </Button>
-          ) : (
-            <Button to="/login" size="lg" fullWidth>
-              Log in to your dashboard
-            </Button>
-          )}
+          <Button to="/portal" size="lg" fullWidth>
+            Go to your dashboard
+          </Button>
         </>
       )}
 
       {state === 'pending' && (
         <>
           <Spinner className="size-10" />
-          <h1 className="font-display text-2xl font-semibold text-white">
-            Still confirming…
-          </h1>
+          <h1 className="font-display text-2xl font-semibold text-white">Setting up your plan…</h1>
           <p className="text-center text-chalk-400">
-            Stripe is finishing up your payment. This can take a few seconds — refresh in a
-            moment, or check your dashboard.
+            Your payment went through. We are just finishing the handover from Stripe — this
+            usually takes a few seconds.
           </p>
-          <Button to="/login" variant="outline" size="lg" fullWidth>
+          <Button to="/portal" variant="outline" size="lg" fullWidth>
+            Go to your dashboard
+          </Button>
+        </>
+      )}
+
+      {state === 'signin' && (
+        <>
+          <CheckCircle2 className="size-14 text-emerald-400" />
+          <h1 className="font-display text-2xl font-semibold text-white">Payment received</h1>
+          <p className="text-center text-chalk-400">
+            Sign in and your plan will be waiting. Nothing else is needed from you.
+          </p>
+          <Button to="/login" size="lg" fullWidth>
             Log in to your dashboard
           </Button>
         </>
@@ -144,8 +196,12 @@ export default function CheckoutSuccess() {
             Couldn't confirm this payment
           </h1>
           <p className="text-center text-chalk-400">{message}</p>
-          <Button to="/programs" variant="outline" size="lg" fullWidth>
-            Back to programmes
+          <p className="text-center text-xs text-chalk-500">
+            If your card was charged, nothing is lost — open your billing page, or email
+            coachauto2026@gmail.com and it will be sorted.
+          </p>
+          <Button to="/portal/billing" variant="outline" size="lg" fullWidth>
+            Open billing
           </Button>
         </>
       )}
