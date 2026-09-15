@@ -2,20 +2,7 @@ import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useQuery } from '@tanstack/react-query'
-import {
-  Activity,
-  Apple,
-  Calculator,
-  Dumbbell,
-  LayoutDashboard,
-  LineChart,
-  Menu,
-  MessageSquare,
-  Moon,
-  PlayCircle,
-  User,
-  X,
-} from 'lucide-react'
+import { Activity, Apple, Calculator, CreditCard, Dumbbell, LayoutDashboard, LineChart, Menu, MessageSquare, Moon, PlayCircle, User, X } from 'lucide-react'
 
 import { useAuth } from '@/store/auth'
 import { api } from '@/lib/api'
@@ -34,6 +21,10 @@ const NAV = [
   { to: '/portal/tutorials', label: 'Video Tutorials', icon: PlayCircle },
   { to: '/portal/calculators', label: 'Calculators', icon: Calculator },
   { to: '/portal/messages', label: 'Messages', icon: MessageSquare, badge: 'unread' },
+  // Sits directly above Profile because the two are the same kind of task:
+  // managing the account rather than training. A subscription product that
+  // hides this is a subscription product people cancel by email.
+  { to: '/portal/billing', label: 'Billing', icon: CreditCard },
   { to: '/portal/profile', label: 'Profile', icon: User },
 ]
 

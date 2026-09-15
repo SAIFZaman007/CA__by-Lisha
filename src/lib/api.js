@@ -4,13 +4,11 @@ const BASE_URL = import.meta.env.VITE_API_URL ?? '/api/v1'
 
 export const http = axios.create({
   baseURL: BASE_URL,
-  withCredentials: true, // sends the HttpOnly refresh cookie
+  withCredentials: true,
   timeout: 20000,
   headers: { Accept: 'application/json' },
 })
 
-// The access token lives in memory only. Nothing sensitive goes into
-// localStorage, so an XSS bug cannot walk away with a session.
 let accessToken = null
 let onSessionLost = () => {}
 
@@ -29,8 +27,6 @@ http.interceptors.request.use((config) => {
   return config
 })
 
-// When the access token expires mid-session, refresh once and replay the
-// request. Concurrent 401s share a single refresh rather than stampeding.
 let refreshPromise = null
 
 http.interceptors.response.use(
@@ -43,10 +39,6 @@ http.interceptors.response.use(
     if (status === 401 && !original?._retried && !isAuthRoute) {
       original._retried = true
       try {
-        // `audience=client` tells the API which of the two isolated session
-        // cookies to read — this app's, not the coach dashboard's. See
-        // REFRESH_COOKIE_NAMES in the backend's auth endpoint for why the two
-        // apps no longer share one cookie slot.
         refreshPromise ??= http.post('/auth/refresh?audience=client').finally(() => {
           refreshPromise = null
         })
@@ -112,12 +104,24 @@ export const api = {
     reference: () => get('/calculators/reference'),
   },
   billing: {
+    summary: () => get('/billing/summary'),
+    entitlement: () => get('/billing/entitlement'),
+    history: (limit) => get('/billing/history', limit ? { limit } : undefined),
+    invoices: () => get('/billing/invoices'),
+
     checkout: (programId) => post('/billing/checkout', { program_id: programId }),
     checkoutStatus: (sessionId) => get(`/billing/checkout/${sessionId}`),
-    entitlement: () => get('/billing/entitlement'),
-    history: () => get('/billing/history'),
+
+    previewChange: (programId) =>
+      post('/billing/change-plan/preview', { program_id: programId }),
+    changePlan: (programId) => post('/billing/change-plan', { program_id: programId }),
+    cancelScheduledChange: () => post('/billing/change-plan/cancel'),
+
+    cancel: (body) => post('/billing/cancel', body ?? {}),
+    resume: () => post('/billing/resume'),
+
+    updatePaymentMethod: () => post('/billing/payment-method'),
     portal: () => post('/billing/portal'),
-    cancel: () => post('/billing/cancel'),
   },
   dashboard: { get: () => get('/dashboard') },
   workouts: {
@@ -182,13 +186,6 @@ export const api = {
     send: (body) => post('/messages/thread', body),
     unreadCount: () => get('/messages/unread-count'),
 
-    // Images go up on their own request, before the message that references
-    // them exists. A slow upload never blocks the text box, and a validation
-    // slip on the message never costs the client a re-upload.
-    //
-    // `onProgress` gets real bytes-sent from axios rather than a spinner: on a
-    // gym connection a silent upload is indistinguishable from a frozen page,
-    // and people respond to that by tapping send again.
     uploadAttachment: (file, onProgress) => {
       const body = new FormData()
       body.append('file', file)

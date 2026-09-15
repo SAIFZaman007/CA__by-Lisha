@@ -36,7 +36,9 @@ const TutorialsPage = lazyWithRetry(() => import('@/pages/portal/TutorialsPage')
 const CalculatorsPage = lazyWithRetry(() => import('@/pages/portal/CalculatorsPage'))
 const MessagesPage = lazyWithRetry(() => import('@/pages/portal/MessagesPage'))
 const ProfilePage = lazyWithRetry(() => import('@/pages/portal/ProfilePage'))
+const BillingPage = lazyWithRetry(() => import('@/pages/portal/BillingPage'))
 
+/** Sends the browser back to the top whenever the route changes. **/
 function ScrollToTop() {
   const { pathname } = useLocation()
 
@@ -47,6 +49,14 @@ function ScrollToTop() {
   return null
 }
 
+/**
+ * A boundary keyed to the current path.
+ *
+ * Changing the key remounts the boundary, which clears a caught error. Without
+ * it, one page crashing would leave the error screen pinned in place for the
+ * rest of the session even after the visitor navigated somewhere healthy —
+ * boundaries hold their error state until something remounts them.
+**/
 function RouteBoundary({ children }) {
   const { pathname } = useLocation()
   return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
@@ -77,6 +87,9 @@ export default function App() {
     bootstrap()
   }, [bootstrap])
 
+  // The app rendered. Whatever chunk problem may have triggered an automatic
+  // reload earlier is over, so release the one-shot guard — a deploy next week
+  // gets its own recovery rather than inheriting a spent flag.
   useEffect(() => {
     clearChunkReloadFlag()
   }, [])
@@ -140,6 +153,7 @@ export default function App() {
               <Route path="tutorials" element={<TutorialsPage />} />
               <Route path="calculators" element={<CalculatorsPage />} />
               <Route path="messages" element={<MessagesPage />} />
+              <Route path="billing" element={<BillingPage />} />
               <Route path="profile" element={<ProfilePage />} />
             </Route>
 

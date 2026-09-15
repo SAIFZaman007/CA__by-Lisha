@@ -16,11 +16,15 @@ export const queryClient = new QueryClient({
   },
 })
 
-/** Query keys in one place so invalidation never misses a cache. */
+/** 
+ * Query keys in one place so invalidation never misses a cache. 
+**/
 export const keys = {
   dashboard: ['dashboard'],
   profile: ['profile'],
   billingEntitlement: ['billing', 'entitlement'],
+  billingSummary: ['billing', 'summary'],
+  billingHistory: ['billing', 'history'],
   programs: ['programs'],
   testimonials: ['testimonials'],
   workoutPlan: ['workouts', 'plan'],
