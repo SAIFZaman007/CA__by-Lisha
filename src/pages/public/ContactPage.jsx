@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
-import { CalendarCheck, Mail, MessageSquare } from 'lucide-react'
-import { InstagramIcon } from '@/components/ui/icons'
+import { CalendarCheck, Clock, Mail, MessageSquare } from 'lucide-react'
 
 import { api, errorMessage } from '@/lib/api'
 import { useSeo } from '@/lib/seo'
@@ -131,20 +130,12 @@ export default function ContactPage() {
 
           <Card>
             <CardBody>
-              <InstagramIcon className="size-6 text-brand-500" aria-hidden="true" />
-              <h3 className="mt-4 text-xl">Instagram</h3>
+              <Clock className="size-6 text-brand-500" aria-hidden="true" />
+              <h3 className="mt-4 text-xl">Reply times</h3>
               <p className="mt-1.5 text-sm text-chalk-400">
-                The account is private. Click through and request to follow — Coach Auto approves
-                clients and prospective clients.
+                Every message and booking request is answered personally by Coach Auto, usually
+                within one business day. Coaching is delivered online, worldwide.
               </p>
-              <a
-                href={SITE.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-3 inline-block text-sm font-medium text-brand-500 hover:underline"
-              >
-                {SITE.instagramHandle}
-              </a>
             </CardBody>
           </Card>
 

@@ -8,6 +8,7 @@ import { useAuth } from '@/store/auth'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { FullPageSpinner, Spinner } from '@/components/ui/Spinner'
+import { useSeo } from '@/lib/seo'
 
 /**
  * Where Stripe sends the browser back after a completed Checkout session.
@@ -48,24 +49,22 @@ export default function CheckoutSuccess() {
   const authStatus = useAuth((s) => s.status)
   const queryClient = useQueryClient()
 
-  const [state, setState] = useState('loading') 
+  const [fetchState, setState] = useState('loading')
+  // Transactional page: never indexed.
+  useSeo({ title: 'Payment confirmed', path: '/checkout/success', noIndex: true })
   const [entitlement, setEntitlement] = useState(null)
   const [message, setMessage] = useState('')
 
+  // States that follow directly from the URL and the session are derived, not
+  // stored — setting them from inside the effect caused a cascading re-render.
+  const derivedState = !sessionId ? 'error' : authStatus === 'anonymous' ? 'signin' : null
+  const state = derivedState ?? fetchState
+  const shownMessage = !sessionId ? 'No checkout session was given.' : message
+
   useEffect(() => {
-    if (!sessionId) {
-      setState('error')
-      setMessage('No checkout session was given.')
-      return undefined
-    }
-
-    // Wait for the silent refresh to finish before deciding anything.
-    if (authStatus === 'loading') return undefined
-
-    if (authStatus === 'anonymous') {
-      setState('signin')
-      return undefined
-    }
+    // Nothing to poll without a session id, while the silent refresh is still
+    // running, or when the visitor must sign in first.
+    if (!sessionId || authStatus !== 'authenticated') return undefined
 
     let cancelled = false
     let timer = null
@@ -94,6 +93,8 @@ export default function CheckoutSuccess() {
 
         queryClient.invalidateQueries({ queryKey: ['billing'] })
         queryClient.invalidateQueries({ queryKey: ['dashboard'] })
+        // A paid plan now comes with an automatically generated meal plan.
+        queryClient.invalidateQueries({ queryKey: ['nutrition'] })
 
         try {
           const data = await api.billing.entitlement()
@@ -195,7 +196,7 @@ export default function CheckoutSuccess() {
           <h1 className="font-display text-2xl font-semibold text-white">
             Couldn't confirm this payment
           </h1>
-          <p className="text-center text-chalk-400">{message}</p>
+          <p className="text-center text-chalk-400">{shownMessage}</p>
           <p className="text-center text-xs text-chalk-500">
             If your card was charged, nothing is lost — open your billing page, or email
             coachauto2026@gmail.com and it will be sorted.

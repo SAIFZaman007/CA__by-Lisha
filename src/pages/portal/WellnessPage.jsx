@@ -248,6 +248,7 @@ function CardioForm({ activityTypes }) {
       <div className="rounded-md border border-ink-600 bg-ink-850 p-3">
         <label className="flex cursor-pointer items-start gap-3">
           <input
+            name="wellness_checkbox"
             type="checkbox"
             checked={manualCalories}
             onChange={(event) => setManualCalories(event.target.checked)}

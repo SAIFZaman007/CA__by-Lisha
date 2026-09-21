@@ -580,6 +580,7 @@ export default function BillingPage() {
                 <label className="mt-4 block">
                   <span className="sr-only">Anything else</span>
                   <textarea
+                    name="billing_textarea"
                     rows={3}
                     value={cancelComment}
                     maxLength={1000}

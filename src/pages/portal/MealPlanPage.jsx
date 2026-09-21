@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check, UtensilsCrossed } from 'lucide-react'
+import { Check, RefreshCw, Sparkles, UtensilsCrossed } from 'lucide-react'
 
 import { api, errorMessage } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
@@ -19,6 +19,20 @@ export default function MealPlanPage() {
   const { data: logs } = useQuery({
     queryKey: keys.mealLogs(todayStr),
     queryFn: () => api.nutrition.logs(todayStr),
+  })
+
+  // Automatic plans: built from height, weight, age, training days and goal.
+  // A client can create one (no plan yet) or refresh an automatic one after
+  // logging a new weight. A coach-written plan is never replaced from here.
+  const generate = useMutation({
+    mutationFn: api.nutrition.generate,
+    onSuccess: (fresh) => {
+      qc.setQueryData(keys.mealPlan, fresh)
+      qc.invalidateQueries({ queryKey: ['nutrition'] })
+      qc.invalidateQueries({ queryKey: keys.dashboard })
+      toast.success('Your meal plan is ready.')
+    },
+    onError: (error) => toast.error(errorMessage(error)),
   })
 
   const toggle = useMutation({
@@ -41,11 +55,17 @@ export default function MealPlanPage() {
             <EmptyState
               icon={UtensilsCrossed}
               title="No meal plan yet"
-              description="Once your intake is in, Coach Auto builds your macros and a weekly plan around the food you actually like."
+              description="Your 7-day plan is built automatically from your height, weight, age, training days and goal — then Coach Auto fine-tunes it at your check-ins. Make sure your profile is complete, then generate it."
               action={
-                <Button to="/portal/profile" size="sm">
-                  Complete my intake
-                </Button>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <Button size="sm" onClick={() => generate.mutate()} loading={generate.isPending}>
+                    <Sparkles className="size-4" aria-hidden="true" />
+                    Generate my meal plan
+                  </Button>
+                  <Button to="/portal/profile" size="sm" variant="subtle">
+                    Complete my profile
+                  </Button>
+                </div>
               }
             />
           </CardBody>
@@ -80,6 +100,32 @@ export default function MealPlanPage() {
           </span>
         }
       />
+
+      {plan.source === 'auto' && (
+        <div className="mb-6 flex flex-col gap-3 rounded-lg border border-ink-600 bg-ink-850 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-start gap-2 text-xs leading-relaxed text-chalk-400">
+            <Sparkles className="mt-0.5 size-4 shrink-0 text-brand-500" aria-hidden="true" />
+            Built automatically from your profile. Logged a new weight or changed your goal?
+            Refresh it — your coach reviews it at every check-in.
+          </p>
+          <Button
+            size="sm"
+            variant="subtle"
+            onClick={() => generate.mutate()}
+            loading={generate.isPending}
+            className="shrink-0"
+          >
+            <RefreshCw className="size-4" aria-hidden="true" />
+            Refresh my plan
+          </Button>
+        </div>
+      )}
+
+      {plan.notes && plan.source !== 'auto' && (
+        <p className="mb-6 rounded-lg border border-ink-600 bg-ink-850 p-4 text-xs leading-relaxed text-chalk-400">
+          {plan.notes}
+        </p>
+      )}
 
       {/* Day tabs */}
       <div className="mb-6 grid grid-cols-4 gap-2 sm:grid-cols-7">

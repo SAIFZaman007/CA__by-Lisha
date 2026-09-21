@@ -225,7 +225,7 @@ function PhotosPanel() {
         action={
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-md border border-ink-600 bg-ink-700 px-4 py-2 font-display text-xs font-bold tracking-wider text-chalk-200 uppercase transition hover:bg-ink-600">
             <Camera className="size-4" /> Add photo
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={onPick} className="sr-only" />
+            <input name="progress_file" type="file" accept="image/jpeg,image/png,image/webp" onChange={onPick} className="sr-only" />
           </label>
         }
       />

@@ -322,6 +322,7 @@ export default function TutorialsPage() {
               aria-hidden="true"
             />
             <input
+              name="tutorials_search"
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}

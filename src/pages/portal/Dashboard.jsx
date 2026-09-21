@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import {
   Area,
   AreaChart,

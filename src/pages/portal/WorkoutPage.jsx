@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { motion, AnimatePresence } from 'motion/react'
+import { m as motion, AnimatePresence } from 'motion/react'
 import { Check, ChevronDown, Dumbbell, PlayCircle, Plus } from 'lucide-react'
 
 import { api, errorMessage } from '@/lib/api'
@@ -181,6 +181,7 @@ function SetChip({ setNumber, record, units, disabled, onSave }) {
   return (
     <span className="flex items-center gap-1 rounded-md border border-brand-500 bg-ink-850 p-1">
       <input
+        name={`set_${setNumber}_weight`}
         type="number"
         inputMode="decimal"
         step="0.5"
@@ -194,6 +195,7 @@ function SetChip({ setNumber, record, units, disabled, onSave }) {
       />
       <span className="text-chalk-500">×</span>
       <input
+        name={`set_${setNumber}_reps`}
         type="number"
         inputMode="numeric"
         value={draft.reps}

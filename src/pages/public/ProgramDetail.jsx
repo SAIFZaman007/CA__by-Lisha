@@ -9,6 +9,7 @@ import { api, errorMessage } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import { toast } from '@/components/ui/Toast'
 import { useSeo } from '@/lib/seo'
+import { breadcrumbSchema, programSchema } from '@/lib/structuredData'
 
 function price(cents) {
   if (typeof cents !== 'number' || Number.isNaN(cents)) return '—'
@@ -49,24 +50,32 @@ export default function ProgramDetail() {
   }
 
   useSeo({
-    title: program?.name ?? 'Coaching programme',
-    description:
-      program?.description ??
-      'Online strength coaching programme from Coach Auto at Autonomy Health and Fitness.',
+    title: program ? `${program.name} — Online Coaching Programme` : 'Coaching programme',
+    description: program
+      ? [
+          program.tagline && program.tagline.replace(/[.!?]?$/, '.'),
+          `${program.days_per_week} training days a week, a meal plan, exercise videos and weekly coach reviews.`,
+          `${price(program.price_cents)}/month.`,
+        ]
+          .filter(Boolean)
+          .join(' ')
+      : 'Online strength coaching programme from Coach Auto at Autonomy Health and Fitness.',
     path: `/programs/${slug}`,
+    image: program?.image_url,
+    // Only for a programme that actually loaded: a 404 slug must not be
+    // described to crawlers as a purchasable service.
+    noIndex: isError,
     jsonLd: program
       ? {
           '@context': 'https://schema.org',
-          '@type': 'Service',
-          name: program.name,
-          description: program.description,
-          serviceType: 'Online strength coaching',
-          provider: { '@type': 'Organization', name: 'Autonomy Health and Fitness' },
-          offers: {
-            '@type': 'Offer',
-            price: ((program.price_cents ?? 0) / 100).toFixed(2),
-            priceCurrency: 'USD',
-          },
+          '@graph': [
+            programSchema(program),
+            breadcrumbSchema([
+              { name: 'Home', path: '/' },
+              { name: 'Programmes', path: '/programs' },
+              { name: program.name, path: `/programs/${program.slug}` },
+            ]),
+          ],
         }
       : undefined,
   })

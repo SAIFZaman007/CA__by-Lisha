@@ -308,6 +308,7 @@ export default function MessagesPage() {
           />
 
           <input
+            name="messages_file"
             ref={fileRef}
             type="file"
             accept="image/jpeg,image/png,image/webp"

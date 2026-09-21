@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router'
 import { XCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
+import { useSeo } from '@/lib/seo'
 
 /**
  * Where Stripe sends the browser back when someone backs out of Checkout
@@ -10,6 +11,9 @@ import { Button } from '@/components/ui/Button'
 export default function CheckoutCancelled() {
   const [params] = useSearchParams()
   const programSlug = params.get('program')
+
+  // Transactional page: never indexed.
+  useSeo({ title: 'Payment not completed', path: '/checkout/cancelled', noIndex: true })
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-lg flex-col items-center justify-center gap-6 px-6 py-16">
