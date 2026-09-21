@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
-import * as motionLib from 'motion/react'
+import { AnimatePresence, m as motion } from 'motion/react'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Logo } from './Logo'
 import { useAuth } from '@/store/auth'
 import { cn } from '@/lib/utils'
 
-const { motion, AnimatePresence } = motionLib
 
 const LINKS = [
   { to: '/programs', label: 'Programmes' },

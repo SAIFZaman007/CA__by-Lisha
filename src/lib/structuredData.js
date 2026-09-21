@@ -1,33 +1,11 @@
 import { SITE } from '@/data/site'
 
-/**
- * Schema.org builders.
- *
- * Structured data is the part of SEO with the clearest return for an online
- * coaching business. It is what produces a rich result rather than a plain blue
- * link, and — increasingly the bigger prize — it is what an AI assistant reads
- * when someone asks it to recommend a coach. A `FAQPage` block is quotable in a
- * way a paragraph of marketing copy is not.
- *
- * Everything is built from `SITE` so the canonical origin is defined once. A
- * `@id` pointing at `localhost` is not a visible bug — it is a schema block
- * that silently fails validation in production.
- */
-
 const BASE = SITE.url
 
 /** Stable node ids, so separate blocks on separate pages describe one entity. */
 export const ORG_ID = `${BASE}/#organization`
 export const SITE_ID = `${BASE}/#website`
 
-/**
- * The business itself.
- *
- * `HealthAndBeautyBusiness` rather than the more obvious `LocalBusiness`: this
- * is an online coaching practice with no premises, and claiming a physical
- * business type without an address is the kind of mismatch that gets structured
- * data ignored rather than rewarded.
- */
 export const organizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': ['Organization', 'HealthAndBeautyBusiness'],
@@ -39,9 +17,10 @@ export const organizationSchema = () => ({
     '@type': 'ImageObject',
     url: `${BASE}/images/logo-lockup-light.png`,
   },
-  image: `${BASE}/images/hero-portrait.png`,
+  image: `${BASE}/images/og-cover.jpg`,
   email: SITE.email,
-  sameAs: [SITE.instagram].filter(Boolean),
+  // Official profiles (Google Business Profile, etc.) go in SITE.sameAs.
+  ...(SITE.sameAs?.length ? { sameAs: SITE.sameAs } : {}),
   areaServed: {
     '@type': 'Place',
     name: 'Worldwide',
@@ -66,13 +45,6 @@ export const websiteSchema = () => ({
   inLanguage: 'en',
 })
 
-/**
- * One coaching tier, as a purchasable service.
- *
- * Prices come from the API in minor units, so they are divided here rather than
- * anywhere a rounding error could reach the customer. An `Offer` with a price
- * and currency is what makes a programme eligible for a rich result at all.
- */
 export const programSchema = (program) => ({
   '@context': 'https://schema.org',
   '@type': 'Service',
@@ -123,15 +95,6 @@ export const breadcrumbSchema = (crumbs) => ({
   })),
 })
 
-/**
- * The gallery.
- *
- * `ImageGallery` with a nested `ImageObject` per photo is what gets individual
- * images into Google Images with their captions attached, rather than indexed
- * as anonymous files sitting behind an API path. `caption` is deliberately fed
- * from `alt_text`, which the API requires and validates — the field most likely
- * to have been written thoughtfully.
- */
 export const gallerySchema = (images, { path = '/gallery', name = 'Gallery' } = {}) => ({
   '@context': 'https://schema.org',
   '@type': 'ImageGallery',
@@ -141,7 +104,8 @@ export const gallerySchema = (images, { path = '/gallery', name = 'Gallery' } = 
   publisher: { '@id': ORG_ID },
   associatedMedia: images.slice(0, 100).map((image) => ({
     '@type': 'ImageObject',
-    contentUrl: `${BASE}${image.image_url}`,
+    // Absolute already when the photo is on the CDN; API paths are relative.
+    contentUrl: /^https?:\/\//.test(image.image_url) ? image.image_url : `${BASE}${image.image_url}`,
     name: image.title,
     caption: image.alt_text,
     ...(image.width ? { width: image.width } : {}),

@@ -1,6 +1,5 @@
 import { Link } from 'react-router'
 import { Mail } from 'lucide-react'
-import { InstagramIcon } from '@/components/ui/icons'
 import { LogoStacked } from './Logo'
 import { SITE } from '@/data/site'
 
@@ -46,24 +45,18 @@ export function Footer() {
             </p>
             <div className="mt-6 flex items-center gap-3">
               <a
-                href={SITE.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-md border border-ink-600 p-2.5 text-chalk-400 transition-colors hover:border-brand-500 hover:text-brand-500"
-                aria-label={`Coach Auto on Instagram (${SITE.instagramHandle})`}
-              >
-                <InstagramIcon className="size-4" />
-              </a>
-              <a
                 href={`mailto:${SITE.email}`}
                 className="rounded-md border border-ink-600 p-2.5 text-chalk-400 transition-colors hover:border-brand-500 hover:text-brand-500"
                 aria-label="Email Coach Auto"
               >
                 <Mail className="size-4" />
               </a>
-              <span className="text-xs text-chalk-500">
-                The Instagram account is private — request to follow.
-              </span>
+              <a
+                href={`mailto:${SITE.email}`}
+                className="text-xs text-chalk-500 transition-colors hover:text-brand-500"
+              >
+                {SITE.email}
+              </a>
             </div>
           </div>
 

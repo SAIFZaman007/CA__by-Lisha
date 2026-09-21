@@ -21,16 +21,15 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    target: 'es2022',
+    cssCodeSplit: true,
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes('node_modules')) return
-          if (/[\\/]node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/.test(id)) {
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler)[\\/]/.test(id)) {
             return 'react'
           }
-          if (id.includes('recharts') || id.includes('d3-')) return 'charts'
-          if (id.includes('node_modules/motion') || id.includes('framer-motion')) return 'motion'
         },
       },
     },

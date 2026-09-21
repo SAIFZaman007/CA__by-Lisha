@@ -99,7 +99,6 @@
     background: var(--color-ink-500);
   }
 
-  /* Number inputs read better without the spinners in a data-entry form. */
   input[type='number']::-webkit-outer-spin-button,
   input[type='number']::-webkit-inner-spin-button {
     -webkit-appearance: none;
@@ -118,8 +117,6 @@
     text-wrap: balance;
   }
 
-  /* The one flourish: a red stress line under section eyebrows, like a bar
-     loaded on the rack. */
   .eyebrow {
     font-family: var(--font-display);
     text-transform: uppercase;
@@ -167,7 +164,7 @@
 }
 
 @layer components {
-  /* Keyboard-only shortcut past the navigation. Off-screen until focused. */
+
   .skip-link {
     position: absolute;
     left: -9999px;
@@ -232,7 +229,6 @@
     transform: scaleX(1);
   }
 
-  /* The current route stays lit, so the user can always see where they are. */
   .nav-link[aria-current='page'] {
     color: var(--color-brand-500);
     text-shadow: 0 0 16px color-mix(in srgb, var(--color-brand-500) 60%, transparent);
@@ -242,7 +238,6 @@
     transform: scaleX(1);
   }
 
-  /* Mobile menu rows: same idea, but a left rail reads better in a stack. */
   .nav-link-mobile {
     position: relative;
     display: block;
@@ -269,8 +264,7 @@
 }
 
 @layer utilities {
-  /* Hairline grid behind the hero. Cheaper and sharper than a background image,
-     and it scales to any viewport without a second asset. */
+
   .bg-grid {
     background-image:
       linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
@@ -278,8 +272,6 @@
     background-size: 64px 64px;
   }
 
-  /* Scroll without a visible scrollbar. Used on the auth panel, which must fit
-     the viewport but still be reachable on very short screens. */
   .scrollbar-none {
     scrollbar-width: none;
     -ms-overflow-style: none;
@@ -288,7 +280,6 @@
     display: none;
   }
 
-  /* Soft red bloom used behind the hero portrait and section accents. */
   .bloom-brand {
     background: radial-gradient(
       circle at center,
@@ -302,7 +293,19 @@
   }
 }
 
-/* Respect the system setting. Anyone who gets motion sick still gets the site. */
+@keyframes hero-rise {
+  from {
+    transform: translateY(14px);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.hero-rise {
+  animation: hero-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

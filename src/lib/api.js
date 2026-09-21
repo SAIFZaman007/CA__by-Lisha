@@ -147,6 +147,8 @@ export const api = {
     logs: (onDate) => get('/nutrition/logs', onDate ? { on_date: onDate } : undefined),
     logMeal: (body) => put('/nutrition/logs', body),
     today: () => get('/nutrition/today'),
+    // Build (or refresh) the automatic plan from the client's latest numbers.
+    generate: () => post('/nutrition/plan/generate'),
   },
   progress: {
     weight: (days = 180) => get('/progress/weight', { days }),

@@ -20,12 +20,11 @@ export function lazyWithRetry(factory) {
       try {
         return await factory()
       } catch (second) {
-        let alreadyReloaded = false
+        let alreadyReloaded
         try {
           alreadyReloaded = sessionStorage.getItem(RELOAD_FLAG) === '1'
           sessionStorage.setItem(RELOAD_FLAG, '1')
         } catch {
-
           throw second
         }
 

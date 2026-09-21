@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { imageUrl } from '@/lib/images'
 import { cn } from '@/lib/utils'
 
 /**
@@ -29,6 +30,45 @@ const MARK = {
 const ALT = 'Coach Auto — Autonomy Health and Fitness'
 
 /**
+ * Light-tone logos are served from the optimised AVIF/WebP renditions (a few
+ * KB each, versus 50–70 KB PNGs rendered at 36 px tall). Dark-tone variants
+ * are rare (white surfaces only) and keep their PNGs.
+ */
+function LogoImage({ name, fallback, width, height, x1, x2, className, loading = 'eager' }) {
+  if (!name) {
+    return (
+      <img
+        src={fallback}
+        alt={ALT}
+        width={width}
+        height={height}
+        className={className}
+        loading={loading}
+        decoding="async"
+      />
+    )
+  }
+  return (
+    <picture>
+      <source
+        type="image/avif"
+        srcSet={`${imageUrl(name, x1, 'avif')} 1x, ${imageUrl(name, x2, 'avif')} 2x`}
+      />
+      <img
+        src={imageUrl(name, x1, 'webp')}
+        srcSet={`${imageUrl(name, x1, 'webp')} 1x, ${imageUrl(name, x2, 'webp')} 2x`}
+        alt={ALT}
+        width={width}
+        height={height}
+        className={className}
+        loading={loading}
+        decoding="async"
+      />
+    </picture>
+  )
+}
+
+/**
  * @param size     'sm' | 'md' | 'lg' — rendered height
  * @param tone     'light' | 'dark'   — use 'dark' only on white surfaces
  * @param markOnly render just the square figure mark
@@ -37,25 +77,26 @@ const ALT = 'Coach Auto — Autonomy Health and Fitness'
 export function Logo({ size = 'md', tone = 'light', markOnly = false, to = '/', className }) {
   const height = { sm: 'h-7', md: 'h-9', lg: 'h-12' }[size]
 
+  const light = tone === 'light'
   const image = markOnly ? (
-    <img
-      src={MARK[tone]}
-      alt={ALT}
+    <LogoImage
+      name={light ? 'logo-mark-light' : null}
+      fallback={MARK[tone]}
       width="512"
       height="512"
+      x1={96}
+      x2={192}
       className={cn('w-auto object-contain', height)}
-      loading="eager"
-      decoding="async"
     />
   ) : (
-    <img
-      src={LOCKUP[tone]}
-      alt={ALT}
+    <LogoImage
+      name={light ? 'logo-lockup-light' : null}
+      fallback={LOCKUP[tone]}
       width="931"
       height="160"
+      x1={240}
+      x2={480}
       className={cn('w-auto object-contain', height)}
-      loading="eager"
-      decoding="async"
     />
   )
 
@@ -84,14 +125,15 @@ export function LogoMark({ size = 'md', tone = 'light', to = '/', className }) {
 /** Full stacked lockup including the strapline — footers and wide space. */
 export function LogoStacked({ tone = 'light', className }) {
   return (
-    <img
-      src={tone === 'dark' ? '/images/logo-coach-auto.png' : '/images/logo-coach-auto-light.png'}
-      alt={ALT}
+    <LogoImage
+      name={tone === 'dark' ? null : 'logo-coach-auto-light'}
+      fallback="/images/logo-coach-auto.png"
       width="900"
       height="515"
+      x1={420}
+      x2={420}
       className={cn('h-auto w-full max-w-52.5 object-contain', className)}
       loading="lazy"
-      decoding="async"
     />
   )
 }

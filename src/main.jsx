@@ -2,11 +2,17 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
 import { QueryClientProvider } from '@tanstack/react-query'
+import { LazyMotion } from 'motion/react'
+import { config as zodConfig } from 'zod'
 
 import App from './App.jsx'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { queryClient } from '@/lib/queryClient'
 import './index.css'
+
+zodConfig({ jitless: true })
+
+const loadMotionFeatures = () => import('./lib/motionFeatures.js').then((mod) => mod.default)
 
 const rootFallback = (
   <div
@@ -56,9 +62,11 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary fallback={rootFallback}>
       <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <LazyMotion features={loadMotionFeatures} strict>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </LazyMotion>
       </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,

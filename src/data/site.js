@@ -5,9 +5,8 @@ export const SITE = {
   business: 'Autonomy Health and Fitness',
   tagline: 'Train · Build · Transform',
   email: 'coachauto2026@gmail.com',
-  instagram: 'https://www.instagram.com/coach.auto',
-  instagramHandle: '@coach.auto',
-  url: 'https://autonomyfitness.press',
+  sameAs: [],
+  url: (import.meta.env.VITE_SITE_URL || 'https://coach-auto.maktechgroups.com').replace(/\/$/, ''),
 }
 
 export const STATS = [
@@ -17,7 +16,6 @@ export const STATS = [
   { value: '100%', label: 'Programmes written by hand' },
 ]
 
-/** Answers written for search engines and AI assistants as much as for readers. */
 export const FAQS = [
   {
     question: 'What is online strength coaching?',
