@@ -149,7 +149,7 @@ function SetChip({ setNumber, record, units, disabled, onSave }) {
         disabled={disabled}
         onClick={() => setDraft({ weight: displayWeight, reps: displayReps })}
         className={cn(
-          'min-w-[84px] rounded-md border px-3 py-2 text-center transition disabled:opacity-40',
+          'min-w-21 rounded-md border px-3 py-2 text-center transition disabled:opacity-40',
           done
             ? 'border-signal-green/50 bg-signal-green/10'
             : 'border-ink-600 bg-ink-850 hover:border-ink-500',
@@ -311,7 +311,7 @@ export default function WorkoutPage() {
               onClick={() => setActiveDayId(d.id)}
               aria-current={isActive ? 'true' : undefined}
               className={cn(
-                'min-w-[150px] shrink-0 rounded-lg border px-4 py-3 text-left transition',
+                'min-w-37.5 shrink-0 rounded-lg border px-4 py-3 text-left transition',
                 isActive
                   ? 'border-brand-500 bg-brand-500/10'
                   : 'border-ink-700 bg-ink-800 hover:border-ink-600',

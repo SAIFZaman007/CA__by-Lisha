@@ -252,7 +252,7 @@ function CardioForm({ activityTypes }) {
             type="checkbox"
             checked={manualCalories}
             onChange={(event) => setManualCalories(event.target.checked)}
-            className="mt-0.5 size-4 accent-[var(--color-brand-500)]"
+            className="mt-0.5 size-4 accent-brand-500"
           />
           <span className="min-w-0">
             <span className="flex items-center gap-1.5 text-sm font-medium text-chalk-50">

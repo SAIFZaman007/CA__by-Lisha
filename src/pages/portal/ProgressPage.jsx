@@ -243,9 +243,9 @@ function PhotosPanel() {
                   src={photo.url}
                   alt={`Check-in ${photo.pose} view, ${photo.log_date}`}
                   loading="lazy"
-                  className="aspect-[3/4] w-full object-cover"
+                  className="aspect-3/4 w-full object-cover"
                 />
-                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-2 py-1.5 text-[11px] text-chalk-200">
+                <span className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/80 to-transparent px-2 py-1.5 text-[11px] text-chalk-200">
                   {new Date(photo.log_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 </span>
                 <button
