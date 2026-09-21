@@ -46,7 +46,7 @@ export function Nutrition() {
             <p className="font-display text-xs font-semibold uppercase tracking-widest text-chalk-400">
               Monday · Cut phase
             </p>
-            <p className="font-display text-lg font-bold text-brand-500">1743 / 2140 kcal</p>
+            <p className="font-display text-lg font-bold text-brand-400">1743 / 2140 kcal</p>
           </div>
 
           <div className="mt-4 space-y-3">
@@ -57,14 +57,14 @@ export function Nutrition() {
               >
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-white">{meal.name}</p>
-                  <p className="text-xs text-chalk-500">{meal.time}</p>
+                  <p className="text-xs text-chalk-400">{meal.time}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-4">
                   <div className="hidden text-right text-[11px] leading-tight sm:block">
                     <span className="text-signal-blue">{meal.p}g</span>{' '}
                     <span className="text-signal-green">{meal.c}g</span>{' '}
                     <span className="text-signal-amber">{meal.f}g</span>
-                    <span className="block text-chalk-500">{meal.kcal} kcal</span>
+                    <span className="block text-chalk-400">{meal.kcal} kcal</span>
                   </div>
                   <span
                     className={
@@ -72,6 +72,7 @@ export function Nutrition() {
                         ? 'flex size-6 items-center justify-center rounded-md bg-signal-green/20 text-signal-green'
                         : 'flex size-6 items-center justify-center rounded-md border border-ink-500 text-ink-500'
                     }
+                    role="img"
                     aria-label={meal.done ? 'Logged' : 'Not yet logged'}
                   >
                     {meal.done && <Check className="size-3.5" aria-hidden="true" />}
@@ -80,7 +81,7 @@ export function Nutrition() {
               </div>
             ))}
           </div>
-          <p className="mt-4 text-center text-[11px] text-chalk-500">
+          <p className="mt-4 text-center text-[11px] text-chalk-400">
             Example plan — yours is built around your targets.
           </p>
         </motion.div>

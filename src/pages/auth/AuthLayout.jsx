@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
-import { motion } from 'motion/react'
+import { m as motion } from 'motion/react'
 import { Logo } from '@/components/layout/Logo'
+import { Picture } from '@/components/ui/Picture'
 import { useSeo } from '@/lib/seo'
 
 /**
@@ -33,14 +34,13 @@ export function AuthLayout({ title, subtitle, children, seoTitle, path }) {
           A banner plus a four-field form is exactly what forced the page to
           scroll on a phone. */}
       <div className="relative hidden w-1/2 shrink-0 overflow-hidden lg:block">
-        <img
-          src="/images/auth-panel.png"
+        <Picture
+          name="auth-panel"
           alt="Coach Auto training in her gym"
-          className="size-full object-cover object-[center_18%]"
-          width="1000"
-          height="1667"
-          fetchPriority="high"
-          decoding="async"
+          sizes="50vw"
+          priority
+          className="block size-full"
+          imgClassName="size-full object-cover object-[center_18%]"
         />
         <div className="absolute inset-0 bg-linear-to-r from-ink-950/60 via-ink-950/25 to-ink-900" />
         <div className="absolute inset-0 bg-linear-to-t from-ink-950/85 via-transparent to-ink-950/40" />

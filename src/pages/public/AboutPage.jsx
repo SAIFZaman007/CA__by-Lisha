@@ -5,6 +5,7 @@ import { breadcrumbSchema } from '@/lib/structuredData'
 import { Section, SectionHeading, motion, fadeUp, inView, stagger } from '@/components/ui/Section'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { Picture } from '@/components/ui/Picture'
 import { SITE, PROCESS } from '@/data/site'
 
 const VALUES = [
@@ -95,14 +96,13 @@ export default function AboutPage() {
             />
 
             <figure className="relative aspect-970/775 overflow-hidden border border-ink-600 shadow-2xl shadow-black/60">
-              <img
-                src="/images/Certification.png"
+              <Picture
+                name="certification"
                 alt="Coach Auto Strength & Bodybuilding Coach CPD Accredited Certificate"
-                className="size-full object-cover"
-                width="992"
-                height="775"
-                fetchPriority="high"
-                decoding="async"
+                sizes="(min-width: 1024px) 45vw, 92vw"
+                priority
+                className="block size-full"
+                imgClassName="size-full object-cover"
               />
             </figure>
           </motion.div>

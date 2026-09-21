@@ -28,7 +28,7 @@ export function Approach() {
             {PROCESS.map((item, index) => (
               <li key={item.step} className="flex gap-5">
                 <span
-                  className="mt-1 shrink-0 font-display text-sm font-bold tabular-nums text-brand-500"
+                  className="mt-1 shrink-0 font-display text-sm font-bold tabular-nums text-brand-400"
                   aria-hidden="true"
                 >
                   {String(index + 1).padStart(2, '0')}
@@ -48,20 +48,18 @@ export function Approach() {
         <motion.div variants={fadeUp} className="flex flex-col gap-4">
           <div className="grid min-h-0 flex-1 grid-cols-2 gap-4">
             <Figure
-              src="/images/coach-auto-gym-1.png"
+              image="coach-auto-gym-1"
+              sizes="(min-width: 1024px) 22vw, 45vw"
               alt="Coach Auto mid-session in her gym"
               ratio="fill"
               focus="upper"
-              width={1000}
-              height={1333}
             />
             <Figure
-              src="/images/coach-auto-gym-3.png"
+              image="coach-auto-gym-3"
+              sizes="(min-width: 1024px) 22vw, 45vw"
               alt="Coach Auto between working sets"
               ratio="fill"
               focus="upper"
-              width={1000}
-              height={1333}
             />
           </div>
 

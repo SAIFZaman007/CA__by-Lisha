@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import * as motionLib from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import { Plus } from 'lucide-react'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
 import { FAQS } from '@/data/site'
 import { cn } from '@/lib/utils'
 
-const { AnimatePresence } = motionLib
 
 export function Faq() {
   const [open, setOpen] = useState(0)

@@ -1,11 +1,8 @@
-import * as motionLib from 'motion/react'
 import { ArrowRight, Play, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { Picture } from '@/components/ui/Picture'
 import { Container } from '@/components/ui/Section'
 import { STATS } from '@/data/site'
-import { EASE } from '@/lib/motion'
-
-const { motion } = motionLib
 
 /**
  * Split editorial hero.
@@ -21,20 +18,27 @@ const { motion } = motionLib
  * copy provides the ambient backdrop, where low resolution costs nothing because
  * it is out of focus by design. The result is a composition that looks
  * deliberate rather than an image that has been forced.
+ *
+ * Performance (PageSpeed mobile was 60):
+ * - No animation library here. The hero is the first paint and the Largest
+ *   Contentful Paint; it now animates with CSS only (`.hero-rise`), and only
+ *   `transform` — never starting from `opacity: 0`, which is what used to push
+ *   LCP back until the JavaScript animation had finished.
+ * - The portrait is a responsive AVIF/WebP `<picture>` (≈35–80 KB on a phone)
+ *   instead of a 2.6 MB PNG, and is preloaded from index.html.
  */
 export function Hero() {
   return (
     <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden pt-28 pb-16 lg:pt-32">
       {/* --- Ambient background ------------------------------------------- */}
       <div className="absolute inset-0 -z-10" aria-hidden="true">
-        <img
-          src="/images/hero-ambient.jpg"
+        <Picture
+          name="hero-ambient"
           alt=""
-          className="size-full scale-110 object-cover opacity-40"
-          width="960"
-          height="540"
-          fetchPriority="high"
-          decoding="async"
+          sizes="100vw"
+          className="block size-full"
+          imgClassName="size-full scale-110 object-cover opacity-40"
+          fetchPriority="low"
         />
         <div className="absolute inset-0 bg-ink-950/70" />
         <div className="absolute inset-0 bg-linear-to-b from-ink-950/90 via-transparent to-ink-900" />
@@ -47,15 +51,10 @@ export function Hero() {
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* --- Copy ------------------------------------------------------ */}
           <div>
-            <motion.div
-              initial={{ opacity: 0, x: -16 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, ease: EASE }}
-              className="mb-6 flex items-center gap-3"
-            >
+            <div className="hero-rise mb-6 flex items-center gap-3">
               <span className="h-0.5 w-10 bg-brand-500" aria-hidden="true" />
               <span className="eyebrow text-chalk-200">Autonomy Health &amp; Fitness</span>
-            </motion.div>
+            </div>
 
             <h1 className="text-balance text-5xl leading-[0.92] sm:text-6xl xl:text-7xl">
               {[
@@ -64,37 +63,25 @@ export function Hero() {
                 { line: 'Delivered', accent: false },
                 { line: 'with results.', accent: false },
               ].map(({ line, accent }, index) => (
-                <motion.span
+                <span
                   key={line}
-                  className="block"
-                  initial={{ opacity: 0, y: 28 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.1 + index * 0.09, ease: EASE }}
+                  className="hero-rise block"
+                  style={{ animationDelay: `${60 + index * 70}ms` }}
                 >
                   <span className={accent ? 'text-brand-500 text-glow-brand' : 'text-white'}>
                     {line}
                   </span>
-                </motion.span>
+                </span>
               ))}
             </h1>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5, ease: EASE }}
-              className="mt-7 max-w-xl text-base leading-relaxed text-chalk-200 sm:text-lg"
-            >
+            <p className="mt-7 max-w-xl text-base leading-relaxed text-chalk-200 sm:text-lg">
               Online strength and bodybuilding coaching for lifters at every level. A programme
               written for you, a meal plan that fits your week, and a coach reading your numbers
               every single week.
-            </motion.p>
+            </p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: EASE }}
-              className="mt-9 flex flex-col gap-3 sm:flex-row"
-            >
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <Button to="/contact" size="lg">
                 Start coaching
                 <ArrowRight className="size-4" aria-hidden="true" />
@@ -102,26 +89,16 @@ export function Hero() {
               <Button to="/programs" variant="outline" size="lg">
                 See the programmes
               </Button>
-            </motion.div>
+            </div>
 
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.75 }}
-              className="mt-6 flex items-center gap-2 text-xs text-chalk-500"
-            >
+            <p className="mt-6 flex items-center gap-2 text-xs text-chalk-500">
               <ShieldCheck className="size-4 text-brand-500" aria-hidden="true" />
               No lock-in contract. Cancel any time before your next billing date.
-            </motion.p>
+            </p>
           </div>
 
           {/* --- Portrait -------------------------------------------------- */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
-            className="relative mx-auto w-full max-w-md lg:max-w-none"
-          >
+          <div className="hero-rise relative mx-auto w-full max-w-md lg:max-w-none">
             {/* Offset red frame — one flourish, echoing the brand rule. */}
             <div
               className="absolute -inset-3 -z-10 rounded-2xl border border-brand-500/30"
@@ -129,14 +106,13 @@ export function Hero() {
             />
 
             <figure className="relative aspect-4/5 overflow-hidden rounded-2xl border border-ink-600 shadow-2xl shadow-black/60">
-              <img
-                src="/images/hero-portrait.png"
+              <Picture
+                name="hero-portrait"
                 alt="Coach Auto training in her gym"
-                className="size-full object-cover object-[center_20%]"
-                width="1200"
-                height="1500"
-                fetchPriority="high"
-                decoding="async"
+                sizes="(min-width: 1024px) 40vw, (min-width: 480px) 448px, 92vw"
+                priority
+                className="block size-full"
+                imgClassName="size-full object-cover object-[center_20%]"
               />
               <div
                 className="absolute inset-0 bg-linear-to-t from-ink-950/70 via-transparent to-transparent"
@@ -166,14 +142,11 @@ export function Hero() {
                 Every log and check-in reviewed by a person, then the programme adjusted.
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* --- Stats ------------------------------------------------------- */}
-        <motion.dl
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.85 }}
+        <dl
           className="mt-16 grid grid-cols-2 gap-x-6 gap-y-8 border-t border-ink-600/70 pt-9 sm:grid-cols-4 lg:mt-20"
         >
           {STATS.map((stat) => (
@@ -187,7 +160,7 @@ export function Hero() {
               </dd>
             </div>
           ))}
-        </motion.dl>
+        </dl>
       </Container>
     </section>
   )

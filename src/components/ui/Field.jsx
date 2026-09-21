@@ -55,6 +55,7 @@ export const Input = forwardRef(function Input(
         <input
           ref={ref}
           id={id}
+          name={props.name ?? id}
           type={isPassword && reveal ? 'text' : type}
           aria-invalid={error ? true : undefined}
           aria-describedby={error || hint ? messageId : undefined}
@@ -91,6 +92,7 @@ export const Select = forwardRef(function Select(
       <select
         ref={ref}
         id={id}
+        name={props.name ?? id}
         aria-invalid={error ? true : undefined}
         aria-describedby={error || hint ? messageId : undefined}
         className={cn(baseInput, error ? 'border-brand-500' : 'border-ink-600')}
@@ -117,6 +119,7 @@ export const Textarea = forwardRef(function Textarea(
       <textarea
         ref={ref}
         id={id}
+        name={props.name ?? id}
         rows={rows}
         aria-invalid={error ? true : undefined}
         aria-describedby={error || hint ? messageId : undefined}
@@ -130,10 +133,26 @@ export const Textarea = forwardRef(function Textarea(
 
 /** Segmented choice — used for sex, goal and unit pickers. */
 export function ToggleGroup({ label, value, onChange, options, className }) {
+  // A radiogroup of buttons has no form control for a <label> to point at, so
+  // the heading is plain text tied to the group with aria-labelledby. (A bare
+  // <label> here is what the "No label associated with a form field" issue
+  // in DevTools was flagging.)
+  const labelId = useId()
   return (
     <div className={className}>
-      <Label required={false}>{label}</Label>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="radiogroup" aria-label={label}>
+      {label && (
+        <p
+          id={labelId}
+          className="mb-2 block font-display text-xs font-semibold uppercase tracking-widest text-chalk-400"
+        >
+          {label}
+        </p>
+      )}
+      <div
+        className="grid grid-cols-2 gap-2 sm:grid-cols-3"
+        role="radiogroup"
+        aria-labelledby={label ? labelId : undefined}
+      >
         {options.map((option) => {
           const active = value === option.value
           return (

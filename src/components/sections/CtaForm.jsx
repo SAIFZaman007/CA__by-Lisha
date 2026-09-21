@@ -4,9 +4,9 @@ import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from '@/components/ui/Toast'
 import { Check, Lock, Mail } from 'lucide-react'
-import { InstagramIcon } from '@/components/ui/icons'
 import { Container, motion, fadeUp, inView, stagger } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
+import { Picture } from '@/components/ui/Picture'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { api, errorMessage } from '@/lib/api'
 import { SITE } from '@/data/site'
@@ -73,13 +73,12 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
   return (
     <section id="start" className="relative overflow-hidden py-20 sm:py-28">
       <div className="absolute inset-0">
-        <img
-          src="/images/coach-auto-gym-2.png"
+        <Picture
+          name="coach-auto-gym-2"
           alt=""
-          className="size-full object-cover object-center opacity-25"
-          loading="lazy"
-          width="900"
-          height="1373"
+          sizes="100vw"
+          className="block size-full"
+          imgClassName="size-full object-cover object-center opacity-25"
         />
         <div className="absolute inset-0 bg-linear-to-r from-ink-950 via-ink-950/95 to-ink-950/80" />
       </div>
@@ -113,15 +112,6 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
               >
                 <Mail className="size-4" aria-hidden="true" />
                 {SITE.email}
-              </a>
-              <a
-                href={SITE.instagram}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-chalk-400 transition-colors hover:text-brand-500"
-              >
-                <InstagramIcon className="size-4" aria-hidden="true" />
-                {SITE.instagramHandle}
               </a>
             </div>
 
@@ -171,7 +161,13 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 Get a coaching call
               </h3>
 
-              <Input label="Full name" required {...register('full_name')} error={errors.full_name?.message} />
+              <Input
+                label="Full name"
+                required
+                autoComplete="name"
+                {...register('full_name')}
+                error={errors.full_name?.message}
+              />
               <Input
                 label="Email address"
                 type="email"
@@ -188,7 +184,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 {...register('phone')}
                 error={errors.phone?.message}
               />
-              <Select label="Level you are interested in" {...register('level_interest')}>
+              <Select label="Level you are interested in" autoComplete="off" {...register('level_interest')}>
                 <option value="">Not sure — help me choose</option>
                 <option value="level_1">Level 1 — Beginner, 3 days</option>
                 <option value="level_2">Level 2 — Intermediate, 4 days</option>
@@ -196,6 +192,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
               </Select>
               <Input
                 label="Your main goal"
+                autoComplete="off"
                 placeholder="Lose fat, build strength, prep for stage…"
                 {...register('primary_goal')}
                 error={errors.primary_goal?.message}
@@ -203,6 +200,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
               <Textarea
                 label="Anything Coach Auto should know?"
                 rows={5}
+                autoComplete="off"
                 placeholder="Training history, injuries, schedule…"
                 {...register('message')}
               />
@@ -216,6 +214,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
               <label className="flex cursor-pointer items-start gap-3 text-xs text-chalk-400">
                 <input
                   type="checkbox"
+                  id="consent_marketing"
                   {...register('consent_marketing')}
                   className="mt-0.5 size-4 shrink-0 rounded border-ink-500 bg-ink-850 accent-brand-500"
                 />

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m as motion } from 'motion/react'
 import { useQuery } from '@tanstack/react-query'
 import { Activity, Apple, Calculator, CreditCard, Dumbbell, LayoutDashboard, LineChart, Menu, MessageSquare, Moon, PlayCircle, User, X } from 'lucide-react'
 
@@ -8,6 +8,7 @@ import { useAuth } from '@/store/auth'
 import { api } from '@/lib/api'
 import { cn, initials } from '@/lib/utils'
 import { Logo } from '@/components/layout/Logo'
+import { useSeo } from '@/lib/seo'
 
 const NAV = [
   { to: '/portal', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -97,6 +98,9 @@ function AccountCard() {
 export function PortalLayout() {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
+
+  // Private, per-client screens: keep every portal route out of search results.
+  useSeo({ title: 'Client portal', path: '/portal', noIndex: true })
 
   const { data: unreadData } = useQuery({
     queryKey: ['messages', 'unread'],

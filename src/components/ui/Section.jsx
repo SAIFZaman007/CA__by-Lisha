@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import * as motionLib from 'motion/react'
+import { m as motion, useInView, useReducedMotion } from 'motion/react'
 import { cn } from '@/lib/utils'
 import { REVEAL_FAILSAFE_MS, fadeUp, inView, stagger } from '@/lib/motion'
-
-const { motion, useInView, useReducedMotion } = motionLib
 
 export function Container({ className, children }) {
   return <div className={cn('mx-auto w-full max-w-7xl px-5 sm:px-8', className)}>{children}</div>
@@ -15,24 +13,21 @@ export function useReveal() {
   const observed = useInView(ref, { once: true, amount: 0 })
   const [failsafe, setFailsafe] = useState(false)
 
+  // If the observer never fires (print, some crawlers, odd layouts), reveal
+  // anyway after a moment so content can never stay invisible. The state is
+  // only set from the timer callback, never synchronously in the effect.
   useEffect(() => {
-    if (reducedMotion) {
-      setFailsafe(true)
-      return undefined
-    }
+    if (reducedMotion) return undefined
     const timer = setTimeout(() => setFailsafe(true), REVEAL_FAILSAFE_MS)
     return () => clearTimeout(timer)
   }, [reducedMotion])
 
-  return {
-    ref,
-    initial: reducedMotion ? false : 'hidden',
-    animate: observed || failsafe ? 'visible' : 'hidden',
-  }
+  const visible = reducedMotion || observed || failsafe
+  return [ref, { initial: reducedMotion ? false : 'hidden', animate: visible ? 'visible' : 'hidden' }]
 }
 
 export function Section({ id, tone = 'base', className, children }) {
-  const reveal = useReveal()
+  const [revealRef, reveal] = useReveal()
 
   return (
     <section
@@ -45,7 +40,7 @@ export function Section({ id, tone = 'base', className, children }) {
       )}
     >
       <Container>
-        <motion.div ref={reveal.ref} variants={stagger()} initial={reveal.initial} animate={reveal.animate}>
+        <motion.div ref={revealRef} variants={stagger()} initial={reveal.initial} animate={reveal.animate}>
           {children}
         </motion.div>
       </Container>

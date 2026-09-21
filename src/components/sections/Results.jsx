@@ -39,13 +39,13 @@ export function Results() {
                 <figcaption className="mt-6 flex items-end justify-between border-t border-ink-600 pt-4">
                   <div>
                     <p className="text-sm font-medium text-white">{item.client_name}</p>
-                    <p className="text-xs text-chalk-500">
+                    <p className="text-xs text-chalk-400">
                       {item.level_label}
                       {item.weeks_in ? ` · week ${item.weeks_in}` : ''}
                     </p>
                   </div>
                   {item.result_metric && (
-                    <p className="font-display text-lg font-bold text-brand-500">
+                    <p className="font-display text-lg font-bold text-brand-400">
                       {item.result_metric}
                     </p>
                   )}

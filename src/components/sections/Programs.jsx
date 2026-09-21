@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import * as motionLib from 'motion/react'
+import { AnimatePresence } from 'motion/react'
 import { Check, ArrowRight } from 'lucide-react'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
@@ -10,7 +10,6 @@ import { api } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
 import { cn } from '@/lib/utils'
 
-const { AnimatePresence } = motionLib
 
 const TAB_LABEL = { level_1: 'Level 1', level_2: 'Level 2', level_3: 'Level 3' }
 
@@ -124,12 +123,11 @@ export function Programs() {
           {/* Nothing but the photograph, taking its height from the card beside
               it, so both columns start and finish on the same line. */}
           <Figure
-            src={`/images/coach-auto-gym-${active + 1}.png`}
+            image={`coach-auto-gym-${(active % 3) + 1}`}
+            sizes="(min-width: 1024px) 38vw, 90vw"
             alt={`Coach Auto training — ${program.name}`}
             ratio="fill"
             focus="upper"
-            width={1000}
-            height={1333}
             caption="Every session is written by hand, then reviewed against what you actually lifted."
           />
 

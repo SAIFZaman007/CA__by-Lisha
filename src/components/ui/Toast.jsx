@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m as motion } from 'motion/react'
 import { CheckCircle2, AlertCircle, X } from 'lucide-react'
 
 /**

@@ -1,3 +1,4 @@
+import { Picture } from '@/components/ui/Picture'
 import { cn } from '@/lib/utils'
 
 /**
@@ -18,6 +19,10 @@ import { cn } from '@/lib/utils'
  *
  * `focus` maps to object-position, so the subject stays in frame when the
  * container is a different shape from the file.
+ *
+ * Pass `image="<name>"` (see `lib/images.js`) for site photography — it is
+ * served as responsive AVIF/WebP. `src` still works for dynamic URLs (API or
+ * CDN images that are already optimised upstream).
  */
 
 const RATIOS = {
@@ -41,6 +46,8 @@ const FOCUS = {
 }
 
 export function Figure({
+  image,
+  sizes = '(min-width: 1024px) 40vw, 90vw',
   src,
   alt = '',
   ratio = 'portrait',
@@ -62,16 +69,28 @@ export function Figure({
         className,
       )}
     >
-      <img
-        src={src}
-        alt={alt}
-        width={width}
-        height={height}
-        loading={priority ? 'eager' : 'lazy'}
-        fetchPriority={priority ? 'high' : undefined}
-        decoding="async"
-        className={cn('size-full object-cover', FOCUS[focus], imgClassName)}
-      />
+      {image ? (
+        // Named catalogue image: AVIF/WebP at the right width for the slot.
+        <Picture
+          name={image}
+          alt={alt}
+          sizes={sizes}
+          priority={priority}
+          className="block size-full"
+          imgClassName={cn('size-full object-cover', FOCUS[focus], imgClassName)}
+        />
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          width={width}
+          height={height}
+          loading={priority ? 'eager' : 'lazy'}
+          fetchPriority={priority ? 'high' : undefined}
+          decoding="async"
+          className={cn('size-full object-cover', FOCUS[focus], imgClassName)}
+        />
+      )}
 
       {/* Bottom scrim, so any caption or badge stays readable over the photo. */}
       {(overlay || caption || children) && (
