@@ -3,11 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Coach Auto \u2014 Autonomy Health and Fitness. Client portal and marketing site.",
+  "description": "Coach Auto — Autonomy Health and Fitness. Client portal and marketing site.",
   "scripts": {
+    "predev": "node scripts/optimize-images.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/optimize-images.mjs",
     "build": "vite build",
     "preview": "vite preview",
+    "images": "node scripts/optimize-images.mjs",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write \"src/**/*.{js,jsx,css}\""
   },
@@ -37,6 +40,7 @@
     "eslint-plugin-react-hooks": "7.1.1",
     "globals": "17.11.0",
     "prettier": "3.9.6",
+    "sharp": "^0.34.5",
     "tailwindcss": "4.3.3",
     "vite": "8.2.1"
   },

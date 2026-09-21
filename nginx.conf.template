@@ -36,6 +36,16 @@ server {
     # `img-src` keeps `blob:` because the message composer previews a picked
     # file with URL.createObjectURL before it is uploaded.
     #
+    # https://res.cloudinary.com is where every uploaded image and video now
+    # lives (see the API's app/services/storage.py). Public artwork is linked
+    # directly; private media arrives via a 307 from the API to a signed CDN
+    # URL — the redirect target is checked against these directives too.
+    #
+    # `frame-src` + the YouTube/Vimeo thumbnail hosts: the client portal's
+    # tutorial library embeds hosted videos in an <iframe>. With no frame-src
+    # the policy fell back to default-src 'self' and every hosted tutorial was
+    # blocked for clients (the coach dashboard already allowed them).
+    #
     # SPLIT-ORIGIN: when the API answers on its own hostname, private media is
     # cross-origin and 'self' no longer covers it. A CSP-blocked image fails
     # silently apart from a console line, so this is easy to miss. The API
@@ -45,12 +55,14 @@ server {
     # the Dockerfile), so the media origin is configured once rather than baked
     # into an image. It must equal PUBLIC_API_URL on the backend. Empty is fine
     # and correct for a same-origin deployment — 'self' already covers it.
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${API_ORIGIN}; media-src 'self' blob: ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://i.vimeocdn.com ${API_ORIGIN}; media-src 'self' blob: https://res.cloudinary.com ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
 
     gzip on;
     gzip_vary on;
+    gzip_comp_level 6;
     gzip_min_length 1024;
-    gzip_types text/plain text/css application/javascript application/json image/svg+xml;
+    gzip_types text/plain text/css text/xml application/javascript application/json
+               application/xml application/manifest+json application/ld+json image/svg+xml;
 
     # --- API proxy ------------------------------------------------------------
     #
@@ -154,7 +166,7 @@ server {
 
     # Static build artefacts only. `^~ /api/` above wins before nginx reaches
     # this regex, so an API route can never be mistaken for a file on disk.
-    location ~* \.(png|jpe?g|webp|svg|ico|woff2?)$ {
+    location ~* \.(png|jpe?g|webp|avif|svg|ico|woff2?)$ {
         expires 30d;
         add_header Cache-Control "public" always;
         add_header X-Content-Type-Options "nosniff" always;
@@ -172,7 +184,7 @@ server {
         add_header X-Frame-Options "DENY" always;
         add_header Referrer-Policy "strict-origin-when-cross-origin" always;
         add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
-        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: ${API_ORIGIN}; media-src 'self' blob: ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+        add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://i.vimeocdn.com ${API_ORIGIN}; media-src 'self' blob: https://res.cloudinary.com ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
     }
 
 

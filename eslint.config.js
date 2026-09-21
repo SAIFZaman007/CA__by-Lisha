@@ -16,6 +16,12 @@ export default [
     rules: {
       ...reactHooks.configs.recommended.rules,
       'no-unused-vars': ['warn', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-hooks/incompatible-library': 'off',
     },
+  },
+  {
+    // Build scripts run in Node, not the browser.
+    files: ['scripts/**/*.mjs', 'vite.config.js'],
+    languageOptions: { globals: { ...globals.node } },
   },
 ]
