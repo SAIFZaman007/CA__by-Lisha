@@ -9,7 +9,7 @@ RUN npm ci
 COPY . .
 
 ARG VITE_API_URL=""
-ARG VITE_SITE_URL="https://coach-auto.maktechgroups.com"
+ARG VITE_SITE_URL="https://autonomyfitness.press"
 ARG VITE_GA_MEASUREMENT_ID=""
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_SITE_URL=$VITE_SITE_URL \
