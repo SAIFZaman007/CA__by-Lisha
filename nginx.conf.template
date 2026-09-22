@@ -24,6 +24,11 @@
 server {
     listen 8080;
     server_name _;
+
+    # Behind Coolify's TLS proxy this container only sees plain http on :8080.
+    # Relative Location headers keep every redirect on https://<site>/…
+    # instead of sending crawlers to http://<site>:8080/….
+    absolute_redirect off;
     root /usr/share/nginx/html;
     index index.html;
 
@@ -237,6 +242,24 @@ server {
     location ~ ^/programs/[a-z0-9-]+/?$ {
         expires epoch;
         try_files $uri/index.html /app.html;
+    }
+
+    # --- Legacy URLs from the previous WordPress site ---------------------------
+    #
+    # Search engines still hold URLs from the site that used to live on this
+    # domain (Bing lists /beginner-plan). A permanent redirect passes whatever
+    # standing those URLs earned to the current pages; WordPress internals get
+    # 410 Gone so crawlers drop them quickly instead of retrying a 404.
+    location ~ ^/(beginner|intermediate|advanced)-plan/?$ {
+        return 301 /programs;
+    }
+
+    location ~ ^/(wp-admin|wp-content|wp-includes|wp-json|feed|comments|category|tag|author)(/|$) {
+        return 410;
+    }
+
+    location ~ ^/(wp-login|xmlrpc|wp-cron)\.php$ {
+        return 410;
     }
 
     location /health {
