@@ -239,6 +239,8 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 Send me occasional training and nutrition tips. You can stop this at any time.
               </label>
 
+              {/* mt-auto keeps the button on the bottom edge whatever the left
+                  column does, so the two cards finish level. */}
               <Button
                 type="submit"
                 fullWidth

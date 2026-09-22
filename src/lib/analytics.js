@@ -1,8 +1,15 @@
+/**
+ * Google Analytics 4 — installed the way this site's security and speed
+ * budgets require.
+**/
+
 const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID || ''
 
+// Off during prerendering, in development, and without a valid GA4 id.
 export const analyticsEnabled =
   !import.meta.env.SSR && import.meta.env.PROD && /^G-[A-Z0-9]{4,}$/.test(MEASUREMENT_ID)
 
+// European Economic Area + UK + Switzerland: consent required before cookies.
 const CONSENT_REGIONS = [
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IS', 'IE',
   'IT', 'LV', 'LI', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
@@ -38,7 +45,23 @@ function loadLibrary() {
   document.head.appendChild(script)
 }
 
-/** Set up the gtag queue now; fetch gtag.js once the page is idle. */
+const INTERACTION_EVENTS = ['pointerdown', 'keydown', 'scroll', 'touchstart', 'wheel']
+const FALLBACK_DELAY_MS = 12_000
+
+/** Fetch gtag.js on first interaction, or after FALLBACK_DELAY_MS. */
+function scheduleLibraryLoad() {
+  let timer = null
+  const listenerOptions = { once: true, passive: true, capture: true }
+  const trigger = () => {
+    clearTimeout(timer)
+    INTERACTION_EVENTS.forEach((type) => window.removeEventListener(type, trigger, listenerOptions))
+    loadLibrary()
+  }
+  INTERACTION_EVENTS.forEach((type) => window.addEventListener(type, trigger, listenerOptions))
+  timer = setTimeout(trigger, FALLBACK_DELAY_MS)
+}
+
+/** Set up the gtag queue now; fetch gtag.js on first interaction. */
 export function initAnalytics() {
   if (!analyticsEnabled || initialised) return
   initialised = true
@@ -60,12 +83,7 @@ export function initAnalytics() {
     page_location: safeLocation(),
   })
 
-  const start = () =>
-    'requestIdleCallback' in window
-      ? window.requestIdleCallback(loadLibrary, { timeout: 4000 })
-      : setTimeout(loadLibrary, 1500)
-  if (document.readyState === 'complete') start()
-  else window.addEventListener('load', start, { once: true })
+  scheduleLibraryLoad()
 }
 
 /** One page view per distinct path. Called by useSeo once the title is set. */
@@ -81,6 +99,10 @@ export function trackPageView(title) {
   })
 }
 
+/**
+ * A named event (GA4 recommended names where one exists: generate_lead,
+ * sign_up, begin_checkout, purchase). Never pass personal data here.
+ */
 export function trackEvent(name, params = {}) {
   if (!analyticsEnabled || !initialised) return
   gtag('event', name, params)

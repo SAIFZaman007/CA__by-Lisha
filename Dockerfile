@@ -17,10 +17,16 @@ ARG VITE_GA_MEASUREMENT_ID="G-QW8S3X6Q6V"
 # live API. If it is unreachable (e.g. the very first deploy) the build still
 # succeeds; those pages are prerendered without that data.
 ARG PRERENDER_API_URL=""
+# Optional "HTML tag" ownership verification for Search Console / Bing
+# Webmaster Tools (DNS verification is preferred and needs none of these).
+ARG GOOGLE_SITE_VERIFICATION=""
+ARG BING_SITE_VERIFICATION=""
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_SITE_URL=$VITE_SITE_URL \
     VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID \
-    PRERENDER_API_URL=$PRERENDER_API_URL
+    PRERENDER_API_URL=$PRERENDER_API_URL \
+    GOOGLE_SITE_VERIFICATION=$GOOGLE_SITE_VERIFICATION \
+    BING_SITE_VERIFICATION=$BING_SITE_VERIFICATION
 # Client build, server build, then prerender + robots.txt/sitemap/llms.txt.
 RUN npm run build
 

@@ -109,6 +109,32 @@ async function fontPreloads() {
     .join('\n    ')
 }
 
+/**
+ * Search-engine ownership tags (optional). Verifying through DNS in Search
+ * Console / Bing Webmaster Tools is better — it covers every subdomain and
+ * survives redesigns — but if you choose the "HTML tag" method, put the
+ * content value in GOOGLE_SITE_VERIFICATION / BING_SITE_VERIFICATION and it
+ * is written into every page's <head> at build time.
+ */
+async function verificationTags() {
+  const entries = [
+    ['google-site-verification', 'GOOGLE_SITE_VERIFICATION'],
+    ['msvalidate.01', 'BING_SITE_VERIFICATION'],
+    ['yandex-verification', 'YANDEX_SITE_VERIFICATION'],
+  ]
+  const tags = []
+  for (const [name, key] of entries) {
+    const value = process.env[key] || (await readEnvFile(key))
+    if (value) tags.push(`<meta name="${name}" content="${escapeHtml(value)}" />`)
+  }
+  return tags.join('\n    ')
+}
+
+function withVerification(html, tags) {
+  if (!tags || html.includes('google-site-verification') || html.includes('msvalidate.01')) return html
+  return html.replace(/(<meta\s+name="viewport"[^>]*>)/i, `$1\n    ${tags}`)
+}
+
 function withPreloads(html, preloads) {
   return preloads ? html.replace('</head>', `    ${preloads}\n  </head>`) : html
 }
@@ -169,7 +195,9 @@ ${urls}
 }
 
 function robotsTxt() {
-  return `# Coach Auto — Autonomy Health and Fitness
+  // Plain ASCII only: some crawlers (and browsers without a charset header)
+  // read robots.txt as Latin-1.
+  return `# Coach Auto - Autonomy Health and Fitness
 # ${SITE_URL}
 #
 # Search engines and AI assistants are welcome on every public page.
@@ -242,7 +270,8 @@ async function main() {
   // saved shell rather than from a prerendered home page.
   let shell = await readFile(path.join(dist, 'index.html'), 'utf8')
   if (shell.includes('id="__RQ_STATE__"')) shell = await readFile(path.join(dist, 'app.html'), 'utf8')
-  const template = shell.includes('as="font"') ? shell : withPreloads(shell, preloads)
+  const withFonts = shell.includes('as="font"') ? shell : withPreloads(shell, preloads)
+  const template = withVerification(withFonts, await verificationTags())
   // The shell, for routes that are not prerendered (portal, auth, 404).
   await writeFile(path.join(dist, 'app.html'), template)
   const pageTemplate = await inlineStylesheet(template)

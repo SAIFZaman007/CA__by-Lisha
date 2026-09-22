@@ -72,6 +72,11 @@ const app = (
   </StrictMode>
 )
 
+// Public pages arrive prerendered (scripts/prerender.mjs): adopt that HTML
+// instead of replacing it, seeded with the exact data it was rendered from.
+// Every other route (portal, auth) ships an empty #root and renders normally.
+// Google Analytics: queue set up before the first page view is reported;
+// the library itself is fetched once the page is idle (lib/analytics.js).
 initAnalytics()
 
 const rootElement = document.getElementById('root')
@@ -88,7 +93,8 @@ if (rootElement.firstElementChild) {
   // Load this page's code first, so hydration completes in a single pass.
   const adopt = () =>
     hydrateRoot(rootElement, app, {
-
+      // A mismatch is recovered by React (it re-renders that subtree on the
+      // client). Report it in development; stay quiet for visitors.
       onRecoverableError: (error) => {
         if (import.meta.env.DEV || window.__DEBUG_HYDRATION__) console.warn('Hydration recovered:', error)
       },

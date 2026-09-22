@@ -65,10 +65,13 @@ function ScrollToTop() {
   const landing = useRef(pathname)
 
   useEffect(() => {
-
+    // The landing page arrived prerendered; from the first navigation on,
+    // pages are client-rendered and may animate in again.
     if (pathname !== landing.current) markClientNavigation()
     window.scrollTo(0, 0)
-
+    // Fallback page view for screens that set no SEO tags of their own (inner
+    // portal pages). Pages using useSeo have already reported by now; the
+    // analytics module ignores a second view of the same path.
     const timer = setTimeout(() => trackPageView(document.title), 800)
     return () => clearTimeout(timer)
   }, [pathname])
@@ -76,6 +79,14 @@ function ScrollToTop() {
   return null
 }
 
+/**
+ * A boundary keyed to the current path.
+ *
+ * Changing the key remounts the boundary, which clears a caught error. Without
+ * it, one page crashing would leave the error screen pinned in place for the
+ * rest of the session even after the visitor navigated somewhere healthy —
+ * boundaries hold their error state until something remounts them.
+**/
 function RouteBoundary({ children }) {
   const { pathname } = useLocation()
   return <ErrorBoundary key={pathname}>{children}</ErrorBoundary>
@@ -106,6 +117,9 @@ export default function App() {
     bootstrap()
   }, [bootstrap])
 
+  // The app rendered. Whatever chunk problem may have triggered an automatic
+  // reload earlier is over, so release the one-shot guard — a deploy next week
+  // gets its own recovery rather than inheriting a spent flag.
   useEffect(() => {
     clearChunkReloadFlag()
   }, [])
