@@ -19,8 +19,12 @@ ARG VITE_GA_MEASUREMENT_ID="G-QW8S3X6Q6V"
 ARG PRERENDER_API_URL=""
 # Optional "HTML tag" ownership verification for Search Console / Bing
 # Webmaster Tools (DNS verification is preferred and needs none of these).
-ARG GOOGLE_SITE_VERIFICATION=""
-ARG BING_SITE_VERIFICATION=""
+# These tokens are public by design (they end up in every page's HTML), so the
+# defaults are baked in: `.env` is excluded from the Docker build context
+# (.dockerignore), which is why setting them there alone never reached
+# production. A Coolify build variable of the same name overrides them.
+ARG GOOGLE_SITE_VERIFICATION="yzfBRXGUdhJo-UZqTEEr5W88h-e8GaG8sSiQinKeQFQ"
+ARG BING_SITE_VERIFICATION="90AA4FE054A497DE4F16DA9732958233"
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_SITE_URL=$VITE_SITE_URL \
     VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID \

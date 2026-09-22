@@ -116,6 +116,18 @@ async function fontPreloads() {
  * content value in GOOGLE_SITE_VERIFICATION / BING_SITE_VERIFICATION and it
  * is written into every page's <head> at build time.
  */
+/**
+ * Accept the token however it was pasted: the bare value, the DNS form
+ * ("google-site-verification=abc…"), or the whole <meta … content="abc…"> tag.
+ */
+function normaliseToken(raw, name) {
+  let value = String(raw ?? '').trim()
+  const fromTag = value.match(/content\s*=\s*["']([^"']+)["']/i)
+  if (fromTag) value = fromTag[1]
+  value = value.replace(new RegExp(`^${name.replace('.', '\\.')}\\s*[=:]\\s*`, 'i'), '')
+  return value.replace(/^["']|["']$/g, '').trim()
+}
+
 async function verificationTags() {
   const entries = [
     ['google-site-verification', 'GOOGLE_SITE_VERIFICATION'],
@@ -124,8 +136,11 @@ async function verificationTags() {
   ]
   const tags = []
   for (const [name, key] of entries) {
-    const value = process.env[key] || (await readEnvFile(key))
-    if (value) tags.push(`<meta name="${name}" content="${escapeHtml(value)}" />`)
+    const value = normaliseToken(process.env[key] || (await readEnvFile(key)), name)
+    if (value) {
+      tags.push(`<meta name="${name}" content="${escapeHtml(value)}" />`)
+      console.log(`[prerender] ${name} meta tag added to every page`)
+    }
   }
   return tags.join('\n    ')
 }
