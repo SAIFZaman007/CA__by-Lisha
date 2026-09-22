@@ -13,6 +13,7 @@ import { Input, Select, Textarea } from '@/components/ui/Field'
 import { SITE } from '@/data/site'
 import { toast } from '@/components/ui/Toast'
 import { browserTimezone, useClientValue } from '@/lib/ssr'
+import { trackEvent } from '@/lib/analytics'
 
 // Earliest bookable slot is tomorrow. Browser-only values (the clock, the
 // timezone) are read after hydration so the prerendered HTML and the first
@@ -29,7 +30,10 @@ function BookingForm() {
 
   const book = useMutation({
     mutationFn: api.site.createBooking,
-    onSuccess: () => setDone(true),
+    onSuccess: () => {
+      trackEvent('generate_lead', { form: 'consultation_booking' })
+      setDone(true)
+    },
     onError: (error) => toast.error(errorMessage(error)),
   })
 

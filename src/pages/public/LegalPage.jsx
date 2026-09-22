@@ -64,7 +64,9 @@ const DOCS = {
         heading: 'Cookies',
         body: [
           'One essential cookie keeps you signed in. It is HttpOnly, meaning scripts cannot read it, and it exists solely to maintain your session.',
-          'If website analytics are enabled, they are configured to measure page traffic only and never to identify individuals.',
+          'The public website uses Google Analytics 4 to count page visits and enquiries, so we know which pages help people. It is configured to collect no advertising data, no Google signals and no personal details; page addresses are sent without their query strings.',
+          'Visitors in the European Economic Area, the United Kingdom and Switzerland are measured without analytics cookies (Google Consent Mode, analytics storage denied by default).',
+          'You can opt out everywhere with the Google Analytics opt-out browser add-on, or by blocking cookies from google-analytics.com.',
         ],
       },
     ],

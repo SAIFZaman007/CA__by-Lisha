@@ -10,7 +10,8 @@ COPY . .
 
 ARG VITE_API_URL=""
 ARG VITE_SITE_URL="https://autonomyfitness.press"
-ARG VITE_GA_MEASUREMENT_ID=""
+# Google Analytics 4 measurement id (public, not a secret). Blank disables GA.
+ARG VITE_GA_MEASUREMENT_ID="G-QW8S3X6Q6V"
 # Where the build reads programmes/testimonials/gallery from to prerender the
 # public pages (scripts/prerender.mjs). Empty = <VITE_SITE_URL>/api/v1, the
 # live API. If it is unreachable (e.g. the very first deploy) the build still

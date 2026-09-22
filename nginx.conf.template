@@ -33,6 +33,11 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
 
+    # Google Analytics 4 (src/lib/analytics.js): gtag.js from
+    # www.googletagmanager.com, hits to *.google-analytics.com /
+    # *.analytics.google.com — Google's documented CSP for GA4. No inline
+    # script is allowed: the gtag() queue lives in a same-origin module.
+    #
     # `img-src` keeps `blob:` because the message composer previews a picked
     # file with URL.createObjectURL before it is uploaded.
     #
@@ -55,7 +60,7 @@ server {
     # the Dockerfile), so the media origin is configured once rather than baked
     # into an image. It must equal PUBLIC_API_URL on the backend. Empty is fine
     # and correct for a same-origin deployment — 'self' already covers it.
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://i.vimeocdn.com ${API_ORIGIN}; media-src 'self' blob: https://res.cloudinary.com ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://i.vimeocdn.com https://*.google-analytics.com https://*.googletagmanager.com ${API_ORIGIN}; media-src 'self' blob: https://res.cloudinary.com ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
 
     gzip on;
     gzip_vary on;

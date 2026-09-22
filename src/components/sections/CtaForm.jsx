@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { trackEvent } from '@/lib/analytics'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -66,8 +67,9 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
         primary_goal: values.primary_goal || null,
         message: values.message || null,
       }),
-    onSuccess: (data) => {
+    onSuccess: (data, values) => {
       toast.success(data.message ?? 'Your details are with Coach Auto.')
+      trackEvent('generate_lead', { form: 'coaching_call', level_interest: values.level_interest || 'unsure' })
       reset()
     },
     onError: (error) => toast.error(errorMessage(error)),
@@ -237,8 +239,6 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 Send me occasional training and nutrition tips. You can stop this at any time.
               </label>
 
-              {/* mt-auto keeps the button on the bottom edge whatever the left
-                  column does, so the two cards finish level. */}
               <Button
                 type="submit"
                 fullWidth

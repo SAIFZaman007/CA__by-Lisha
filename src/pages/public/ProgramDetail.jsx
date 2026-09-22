@@ -9,6 +9,7 @@ import { api, errorMessage } from '@/lib/api'
 import { useAuth } from '@/store/auth'
 import { toast } from '@/components/ui/Toast'
 import { useSeo } from '@/lib/seo'
+import { trackEvent } from '@/lib/analytics'
 import { breadcrumbSchema, programSchema } from '@/lib/structuredData'
 
 function price(cents) {
@@ -46,6 +47,11 @@ export default function ProgramDetail() {
       navigate('/login', { state: { from: `/programs/${slug}` } })
       return
     }
+    trackEvent('begin_checkout', {
+      currency: 'USD',
+      value: (program.price_cents ?? 0) / 100,
+      items: [{ item_id: program.slug, item_name: program.name, price: (program.price_cents ?? 0) / 100 }],
+    })
     subscribe.mutate()
   }
 

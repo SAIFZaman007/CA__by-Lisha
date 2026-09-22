@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
 import { useAuth } from '@/store/auth'
 import { errorMessage } from '@/lib/api'
+import { trackEvent } from '@/lib/analytics'
 
 export default function Register() {
   const registerUser = useAuth((s) => s.register)
@@ -29,6 +30,7 @@ export default function Register() {
         password: values.password,
         accepts_terms: true,
       })
+      trackEvent('sign_up', { method: 'email' })
       navigate('/portal', { replace: true })
     } catch (error) {
       setFormError(errorMessage(error, 'We could not create that account.'))

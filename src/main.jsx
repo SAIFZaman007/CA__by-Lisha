@@ -6,6 +6,7 @@ import { QueryClientProvider, hydrate } from '@tanstack/react-query'
 import { LazyMotion } from 'motion/react'
 
 import App, { preloadRoute } from './App.jsx'
+import { initAnalytics } from '@/lib/analytics'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { queryClient } from '@/lib/queryClient'
 import './index.css'
@@ -71,9 +72,8 @@ const app = (
   </StrictMode>
 )
 
-// Public pages arrive prerendered (scripts/prerender.mjs): adopt that HTML
-// instead of replacing it, seeded with the exact data it was rendered from.
-// Every other route (portal, auth) ships an empty #root and renders normally.
+initAnalytics()
+
 const rootElement = document.getElementById('root')
 const stateElement = document.getElementById('__RQ_STATE__')
 
@@ -88,8 +88,7 @@ if (rootElement.firstElementChild) {
   // Load this page's code first, so hydration completes in a single pass.
   const adopt = () =>
     hydrateRoot(rootElement, app, {
-      // A mismatch is recovered by React (it re-renders that subtree on the
-      // client). Report it in development; stay quiet for visitors.
+
       onRecoverableError: (error) => {
         if (import.meta.env.DEV || window.__DEBUG_HYDRATION__) console.warn('Hydration recovered:', error)
       },

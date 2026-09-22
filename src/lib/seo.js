@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 
 import { SITE } from '@/data/site'
+import { trackPageView } from '@/lib/analytics'
 
 const BASE_URL = SITE.url
 const DEFAULT_IMAGE = `${BASE_URL}/images/og-cover.jpg`
@@ -124,6 +125,9 @@ export function useSeo(options) {
       document.head.appendChild(script)
       return script
     })
+    // The title is final now, so this page view reports the right one.
+    trackPageView(seo.title)
+
     return () => scripts.forEach((script) => script.remove())
   }, [serialised])
 }

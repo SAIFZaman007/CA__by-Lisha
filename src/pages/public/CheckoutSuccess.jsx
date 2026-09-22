@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { FullPageSpinner, Spinner } from '@/components/ui/Spinner'
 import { useSeo } from '@/lib/seo'
+import { trackEvent } from '@/lib/analytics'
 
 /**
  * Where Stripe sends the browser back after a completed Checkout session.
@@ -99,6 +100,26 @@ export default function CheckoutSuccess() {
         try {
           const data = await api.billing.entitlement()
           if (!cancelled) setEntitlement(data)
+          // Once per Stripe session (a reload of this page is not a second sale).
+          const sub = data?.subscription
+          const key = `ca:purchase-tracked:${sessionId}`
+          let seen = false
+          try {
+            seen = sessionStorage.getItem(key) === '1'
+            sessionStorage.setItem(key, '1')
+          } catch {
+            /* private mode: track anyway */
+          }
+          if (!seen) {
+            trackEvent('purchase', {
+              transaction_id: sessionId,
+              currency: (sub?.currency || 'usd').toUpperCase(),
+              value: (sub?.price_cents ?? 0) / 100,
+              items: data?.program
+                ? [{ item_id: data.program.slug, item_name: data.program.name }]
+                : undefined,
+            })
+          }
         } catch {
           /* the CTA below still works without the summary card */
         }
