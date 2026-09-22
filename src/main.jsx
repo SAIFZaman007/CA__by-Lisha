@@ -1,16 +1,15 @@
+import './lib/zod-setup.js'
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
+import { createRoot, hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router'
-import { QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider, hydrate } from '@tanstack/react-query'
 import { LazyMotion } from 'motion/react'
-import { config as zodConfig } from 'zod'
 
-import App from './App.jsx'
+import App, { preloadRoute } from './App.jsx'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { queryClient } from '@/lib/queryClient'
 import './index.css'
 
-zodConfig({ jitless: true })
 
 const loadMotionFeatures = () => import('./lib/motionFeatures.js').then((mod) => mod.default)
 
@@ -58,7 +57,7 @@ const rootFallback = (
   </div>
 )
 
-createRoot(document.getElementById('root')).render(
+const app = (
   <StrictMode>
     <ErrorBoundary fallback={rootFallback}>
       <QueryClientProvider client={queryClient}>
@@ -69,5 +68,33 @@ createRoot(document.getElementById('root')).render(
         </LazyMotion>
       </QueryClientProvider>
     </ErrorBoundary>
-  </StrictMode>,
+  </StrictMode>
 )
+
+// Public pages arrive prerendered (scripts/prerender.mjs): adopt that HTML
+// instead of replacing it, seeded with the exact data it was rendered from.
+// Every other route (portal, auth) ships an empty #root and renders normally.
+const rootElement = document.getElementById('root')
+const stateElement = document.getElementById('__RQ_STATE__')
+
+if (rootElement.firstElementChild) {
+  if (stateElement) {
+    try {
+      hydrate(queryClient, JSON.parse(stateElement.textContent))
+    } catch {
+      /* stale or malformed snapshot: the queries simply fetch again */
+    }
+  }
+  // Load this page's code first, so hydration completes in a single pass.
+  const adopt = () =>
+    hydrateRoot(rootElement, app, {
+      // A mismatch is recovered by React (it re-renders that subtree on the
+      // client). Report it in development; stay quiet for visitors.
+      onRecoverableError: (error) => {
+        if (import.meta.env.DEV || window.__DEBUG_HYDRATION__) console.warn('Hydration recovered:', error)
+      },
+    })
+  preloadRoute(window.location.pathname).then(adopt, adopt)
+} else {
+  createRoot(rootElement).render(app)
+}

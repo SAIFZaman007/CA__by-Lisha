@@ -63,7 +63,9 @@ export function Programs() {
         ))}
       </motion.div>
 
-      <AnimatePresence mode="wait">
+      {/* initial={false}: the first panel renders in place (prerendered HTML
+          must never start at opacity 0); switching tabs still animates. */}
+      <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={program.id}
           id={`program-panel-${program.slug}`}

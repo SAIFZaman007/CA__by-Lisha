@@ -4,6 +4,21 @@
 @import '@fontsource/barlow-condensed/600.css';
 @import '@fontsource/barlow-condensed/700.css';
 
+/*
+ * Metric-matched stand-in for Inter while the web font loads: Arial scaled
+ * to Inter's size and vertical metrics, so text keeps its line breaks and
+ * height when Inter swaps in (no layout shift).
+ */
+@font-face {
+  font-family: 'Inter Fallback';
+  /* Arimo and Liberation Sans are metric-compatible with Arial on Linux/Android. */
+  src: local('Arial'), local('Arimo'), local('Liberation Sans'), local('Helvetica Neue'), local('Helvetica');
+  ascent-override: 90.44%;
+  descent-override: 22.52%;
+  line-gap-override: 0%;
+  size-adjust: 107.12%;
+}
+
 /* ==========================================================================
    Coach Auto design tokens
    Black gym floor, red under the bar. Taken from the approved Figma and the
@@ -26,14 +41,14 @@
   --color-chalk-50: #ffffff;
   --color-chalk-200: #d6d6dc;
   --color-chalk-400: #9a9aa4;
-  --color-chalk-500: #74747e;
+  --color-chalk-500: #8a8a94; /* 4.5:1+ on every ink surface (WCAG AA) */
 
   --color-signal-green: #22c55e;
   --color-signal-blue: #3b82f6;
   --color-signal-amber: #f59e0b;
 
   --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
-  --font-sans: 'Inter Variable', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system, sans-serif;
 
   --radius-card: 0.75rem;
 }
@@ -230,7 +245,8 @@
   }
 
   .nav-link[aria-current='page'] {
-    color: var(--color-brand-500);
+    /* brand-400: brand-500 text on the dark header is 4.1:1, under AA. */
+    color: var(--color-brand-400);
     text-shadow: 0 0 16px color-mix(in srgb, var(--color-brand-500) 60%, transparent);
   }
 
@@ -258,7 +274,7 @@
   .nav-link-mobile[aria-current='page'] {
     border-left-color: var(--color-brand-500);
     background-color: color-mix(in srgb, var(--color-brand-500) 10%, transparent);
-    color: var(--color-brand-500);
+    color: var(--color-brand-400);
     text-shadow: 0 0 14px color-mix(in srgb, var(--color-brand-500) 50%, transparent);
   }
 }

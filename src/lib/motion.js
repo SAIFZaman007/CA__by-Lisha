@@ -1,3 +1,5 @@
+import { skipEntranceAnimation } from '@/lib/ssr'
+
 export const EASE = [0.22, 1, 0.36, 1]
 
 export const fadeUp = {
@@ -25,6 +27,15 @@ export const inView = {
   initial: 'hidden',
   whileInView: 'visible',
   viewport: { once: true, amount: 0 },
+}
+
+/**
+ * `inView`, but prerender-safe: on the server and while the landing page
+ * hydrates, content renders in its final state instead of `opacity: 0`
+ * (see lib/ssr.js). Use this rather than spreading `inView` directly.
+ */
+export function inViewProps() {
+  return skipEntranceAnimation() ? { initial: false, animate: 'visible' } : inView
 }
 
 export const REVEAL_FAILSAFE_MS = 700

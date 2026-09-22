@@ -7,7 +7,7 @@ import { keys } from '@/lib/queryClient'
 import { useSeo } from '@/lib/seo'
 import { breadcrumbSchema, gallerySchema } from '@/lib/structuredData'
 import { cn } from '@/lib/utils'
-import { Section } from '@/components/ui/Section'
+import { Section, SectionHeading } from '@/components/ui/Section'
 import { Spinner } from '@/components/ui/Spinner'
 
 const TITLE = 'Hall of the Coach'
@@ -137,11 +137,14 @@ export default function GalleryPage() {
   })
 
   return (
-    <Section
-      eyebrow="Gallery"
-      title={TITLE}
-      description="Transformations, sessions and the days that made them. Every photo here is someone's work."
-    >
+    <Section className="pt-36">
+      {/* Section takes no heading props; the heading was silently dropped. */}
+      <SectionHeading
+        as="h1"
+        eyebrow="Gallery"
+        title={TITLE}
+        description="Transformations, sessions and the days that made them. Every photo here is someone's work."
+      />
       {isPending ? (
         <div className="flex justify-center py-20">
           <Spinner />
@@ -152,7 +155,7 @@ export default function GalleryPage() {
         </p>
       ) : (
         <>
-          <div className="mb-8 flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+          <div className="mb-8 mt-10 flex flex-wrap gap-2" role="group" aria-label="Filter by category">
             <button
               type="button"
               onClick={() => setActive('all')}

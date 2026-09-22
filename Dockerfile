@@ -11,9 +11,16 @@ COPY . .
 ARG VITE_API_URL=""
 ARG VITE_SITE_URL="https://autonomyfitness.press"
 ARG VITE_GA_MEASUREMENT_ID=""
+# Where the build reads programmes/testimonials/gallery from to prerender the
+# public pages (scripts/prerender.mjs). Empty = <VITE_SITE_URL>/api/v1, the
+# live API. If it is unreachable (e.g. the very first deploy) the build still
+# succeeds; those pages are prerendered without that data.
+ARG PRERENDER_API_URL=""
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_SITE_URL=$VITE_SITE_URL \
-    VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID
+    VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID \
+    PRERENDER_API_URL=$PRERENDER_API_URL
+# Client build, server build, then prerender + robots.txt/sitemap/llms.txt.
 RUN npm run build
 
 # --- runtime -------------------------------------------------------------------

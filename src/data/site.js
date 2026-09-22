@@ -3,10 +3,26 @@
 export const SITE = {
   brand: 'Coach Auto',
   business: 'Autonomy Health and Fitness',
+  // Every name people actually search for. Used in structured data
+  // (`alternateName`) and llms.txt so search engines and AI assistants
+  // connect all of them to this one site.
+  alternateNames: ['Autonomy Fitness', 'Autonomy Health and Fitness', 'Coach Auto Fitness'],
   tagline: 'Train · Build · Transform',
+  description:
+    'Coach Auto (Autonomy Health and Fitness) is an online strength, bodybuilding and nutrition coaching service. Certified coach Lisha Chesson writes personalised training programmes and meal plans and reviews every client’s progress weekly — beginner to advanced, worldwide.',
+  defaultTitle: 'Coach Auto — Autonomy Health & Fitness | Online Strength Coaching',
   email: 'coachauto2026@gmail.com',
+  // The coach behind the brand, shown on the About page and in Person
+  // structured data so a search for her name finds this site. Set `name` to
+  // '' to keep her name off the site entirely.
+  coach: {
+    name: 'Lisha Chesson',
+    jobTitle: 'Certified Strength & Bodybuilding Coach',
+  },
+  // Official profiles only (Google Business Profile, YouTube, LinkedIn…).
+  // Each one is a strong "this is the same entity" signal for Google and AI.
   sameAs: [],
-  url: (import.meta.env.VITE_SITE_URL || 'https://coach-auto.maktechgroups.com').replace(/\/$/, ''),
+  url: (import.meta.env.VITE_SITE_URL || 'https://autonomyfitness.press').replace(/\/$/, ''),
 }
 
 export const STATS = [

@@ -39,7 +39,9 @@ export function Picture({
         height={entry.height}
         loading={priority ? 'eager' : 'lazy'}
         fetchPriority={priority ? 'high' : 'auto'}
-        decoding={priority ? 'sync' : 'async'}
+        // Always async. `sync` on the hero portrait held back the whole first
+        // paint (text included) until the AVIF was decoded: ~1 s on a phone.
+        decoding="async"
         className={imgClassName}
         {...rest}
       />

@@ -14,9 +14,10 @@ import { FAQS } from '@/data/site'
 
 export default function Home() {
   useSeo({
-    title: 'Online Strength & Bodybuilding Coaching',
+    // No per-page title: the home page uses SITE.defaultTitle, which carries
+    // every brand name people search for (Coach Auto, Autonomy Health & Fitness).
     description:
-      'Online strength and bodybuilding coaching with Coach Auto. Personalised training programmes, meal plans, exercise videos and weekly progress reviews for beginner to advanced lifters.',
+      'Coach Auto by Autonomy Health & Fitness: online strength, bodybuilding and nutrition coaching. Personalised programmes, meal plans and weekly progress reviews.',
     path: '/',
     jsonLd: faqSchema(FAQS),
   })

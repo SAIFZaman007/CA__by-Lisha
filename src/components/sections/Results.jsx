@@ -28,7 +28,7 @@ export function Results() {
                 variants={fadeUp}
                 className="flex flex-col rounded-xl border border-ink-600 bg-ink-800 p-6"
               >
-                <div className="flex gap-0.5" aria-label={`${item.rating} out of 5`}>
+                <div className="flex gap-0.5" role="img" aria-label={`${item.rating} out of 5`}>
                   {Array.from({ length: item.rating }).map((_, i) => (
                     <Star key={i} className="size-3.5 fill-brand-500 text-brand-500" aria-hidden="true" />
                   ))}

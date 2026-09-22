@@ -5,3 +5,6 @@ dist
 *.log
 .DS_Store
 public/images/opt
+
+# Server bundle used only while prerendering (npm run build)
+dist-ssr

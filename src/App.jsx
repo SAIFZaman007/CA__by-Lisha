@@ -1,4 +1,4 @@
-import { Suspense, useEffect } from 'react'
+import { Suspense, useEffect, useRef } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router'
 
 import { useAuth } from '@/store/auth'
@@ -9,6 +9,7 @@ import { FullPageSpinner } from '@/components/ui/Spinner'
 import { ToastHost } from '@/components/ui/Toast'
 import { clearChunkReloadFlag, lazyWithRetry } from '@/lib/lazyWithRetry'
 import Home from '@/pages/public/Home'
+import { markClientNavigation } from '@/lib/ssr'
 
 // Lazy-loaded routes.
 const ProgramsPage = lazyWithRetry(() => import('@/pages/public/ProgramsPage'))
@@ -38,11 +39,34 @@ const MessagesPage = lazyWithRetry(() => import('@/pages/portal/MessagesPage'))
 const ProfilePage = lazyWithRetry(() => import('@/pages/portal/ProfilePage'))
 const BillingPage = lazyWithRetry(() => import('@/pages/portal/BillingPage'))
 
+// Public routes that are prerendered, in match order. main.jsx preloads the
+// landing route's chunk before hydrating (see lazyWithRetry).
+const PUBLIC_ROUTE_CHUNKS = [
+  [/^\/programs\/?$/, ProgramsPage],
+  [/^\/programs\/[^/]+\/?$/, ProgramDetail],
+  [/^\/about\/?$/, AboutPage],
+  [/^\/contact\/?$/, ContactPage],
+  [/^\/tools\/?$/, ToolsPage],
+  [/^\/gallery\/?$/, GalleryPage],
+  [/^\/(privacy|terms)\/?$/, LegalPage],
+]
+
+/** Load the code for the page at `pathname` (no-op for the home page). */
+export function preloadRoute(pathname) {
+  if (pathname === '/' || pathname === '') return Promise.resolve()
+  const match = PUBLIC_ROUTE_CHUNKS.find(([pattern]) => pattern.test(pathname))
+  return (match ? match[1] : NotFound).preload()
+}
+
 /** Sends the browser back to the top whenever the route changes. **/
 function ScrollToTop() {
   const { pathname } = useLocation()
+  const landing = useRef(pathname)
 
   useEffect(() => {
+    // The landing page arrived prerendered; from the first navigation on,
+    // pages are client-rendered and may animate in again.
+    if (pathname !== landing.current) markClientNavigation()
     window.scrollTo(0, 0)
   }, [pathname])
 

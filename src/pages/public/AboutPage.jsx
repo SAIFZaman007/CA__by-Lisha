@@ -1,8 +1,9 @@
 import { Award, HeartPulse, ShieldCheck, Users } from 'lucide-react'
 
 import { useSeo } from '@/lib/seo'
-import { breadcrumbSchema } from '@/lib/structuredData'
-import { Section, SectionHeading, motion, fadeUp, inView, stagger } from '@/components/ui/Section'
+import { breadcrumbSchema, organizationSchema, personSchema } from '@/lib/structuredData'
+import { useState } from 'react'
+import { Section, SectionHeading, motion, fadeUp, inViewProps, stagger } from '@/components/ui/Section'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Picture } from '@/components/ui/Picture'
@@ -32,15 +33,20 @@ const VALUES = [
 ]
 
 export default function AboutPage() {
+  const [reveal] = useState(inViewProps)
   useSeo({
-    title: 'About Coach Auto',
+    title: SITE.coach?.name ? `About ${SITE.coach.name}, Online Strength Coach` : 'About Coach Auto',
     description:
-      'Coach Auto is the online strength coaching arm of Autonomy Health and Fitness — certified bodybuilding coaching for beginners through advanced athletes, with training, nutrition and recovery in one place.',
+      'Coach Auto is the online strength coaching arm of Autonomy Health and Fitness, run by certified coach Lisha Chesson — bodybuilding and nutrition coaching for beginners to advanced athletes.',
     path: '/about',
-    jsonLd: breadcrumbSchema([
-      { name: 'Home', path: '/' },
-      { name: 'About', path: '/about' },
-    ]),
+    jsonLd: [
+      breadcrumbSchema([
+        { name: 'Home', path: '/' },
+        { name: 'About', path: '/about' },
+      ]),
+      organizationSchema(),
+      personSchema(),
+    ].filter(Boolean),
   })
 
   return (
@@ -52,9 +58,7 @@ export default function AboutPage() {
               About
             </motion.p>
             <motion.h1 variants={fadeUp} className="text-4xl sm:text-6xl">
-              Coaching built from
-              
-
+              Coaching built from{' '}
               <span className="text-brand-500">the inside out.</span>
             </motion.h1>
             <motion.div variants={fadeUp} className="mt-6 space-y-4 text-chalk-400">
@@ -63,6 +67,13 @@ export default function AboutPage() {
                 who want to get strong properly — with a program written for them, food they can
                 actually stick to, and someone reading their progress every week.
               </p>
+              {SITE.coach?.name && (
+                <p className="leading-relaxed">
+                  Coach Auto is run by <strong className="text-chalk-100">{SITE.coach.name}</strong>,
+                  a {SITE.coach.jobTitle.toLowerCase()}. She writes every programme and meal plan
+                  herself and reads every client check-in.
+                </p>
+              )}
               <p className="leading-relaxed">
                 Coaching is delivered entirely online, which means the standard does not depend on
                 living near a particular gym. Your program, your meal plan, your measurements,
@@ -98,7 +109,7 @@ export default function AboutPage() {
             <figure className="relative aspect-970/775 overflow-hidden border border-ink-600 shadow-2xl shadow-black/60">
               <Picture
                 name="certification"
-                alt="Coach Auto Strength & Bodybuilding Coach CPD Accredited Certificate"
+                alt={`${SITE.coach?.name || 'Coach Auto'} — CPD-accredited Strength & Bodybuilding Coach certificate`}
                 sizes="(min-width: 1024px) 45vw, 92vw"
                 priority
                 className="block size-full"
@@ -116,7 +127,7 @@ export default function AboutPage() {
           description="The coaching philosophy behind every program written here."
         />
         <motion.ul
-          {...inView}
+          {...reveal}
           variants={stagger()}
           className="mt-10 grid gap-5 sm:grid-cols-2"
         >
@@ -142,7 +153,7 @@ export default function AboutPage() {
         <ol className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {PROCESS.map((item, index) => (
             <li key={item.step} className="relative">
-              <span className="font-display text-5xl font-bold text-ink-600">
+              <span className="font-display text-5xl font-bold text-[#66666e]" aria-hidden="true">
                 {String(index + 1).padStart(2, '0')}
               </span>
               <h3 className="mt-2 text-lg">{item.step}</h3>

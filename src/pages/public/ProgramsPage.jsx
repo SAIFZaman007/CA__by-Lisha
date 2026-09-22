@@ -47,6 +47,7 @@ export default function ProgramsPage() {
     <>
       <Section className="pt-36">
         <SectionHeading
+          as="h1"
           eyebrow="Coaching programmes"
           title="Choose the level that matches your training"
           description="Every level runs the same coaching standard — the difference is how many days a week you train and how much volume your body can recover from."
@@ -87,7 +88,7 @@ export default function ProgramsPage() {
                 variants={fadeUp}
                 className="flex flex-col rounded-xl border border-ink-600 bg-ink-800 p-7"
               >
-                <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-brand-500">
+                <p className="font-display text-xs font-semibold uppercase tracking-[0.2em] text-brand-400">
                   {program.days_per_week} days / week
                 </p>
                 <h2 className="mt-3 text-2xl">{program.name}</h2>

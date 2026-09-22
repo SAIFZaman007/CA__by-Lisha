@@ -108,9 +108,13 @@ export function Hero() {
             <figure className="relative aspect-4/5 overflow-hidden rounded-2xl border border-ink-600 shadow-2xl shadow-black/60">
               <Picture
                 name="hero-portrait"
-                alt="Coach Auto training in her gym"
+                alt="Lisha Chesson, Coach Auto's strength coach, training in her gym"
                 sizes="(min-width: 1024px) 40vw, (min-width: 480px) 448px, 92vw"
                 priority
+                // Eager (it is the desktop LCP), but not "high": on a phone the
+                // portrait sits below the headline, and a high-priority 80 KB
+                // image there competes with the text that is the mobile LCP.
+                fetchPriority="auto"
                 className="block size-full"
                 imgClassName="size-full object-cover object-[center_20%]"
               />

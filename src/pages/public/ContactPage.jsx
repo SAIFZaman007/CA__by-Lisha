@@ -12,14 +12,19 @@ import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea } from '@/components/ui/Field'
 import { SITE } from '@/data/site'
 import { toast } from '@/components/ui/Toast'
+import { browserTimezone, useClientValue } from '@/lib/ssr'
+
+// Earliest bookable slot is tomorrow. Browser-only values (the clock, the
+// timezone) are read after hydration so the prerendered HTML and the first
+// client render match exactly.
+let cachedEarliest
+const earliestSlot = () =>
+  (cachedEarliest ??= new Date(Date.now() + 86_400_000).toISOString().slice(0, 16))
 
 function BookingForm() {
   const [done, setDone] = useState(false)
-  // Earliest bookable slot is tomorrow. The lazy initialiser reads the clock
-  // once on mount, so render itself stays pure.
-  const [earliest] = useState(() =>
-    new Date(Date.now() + 86_400_000).toISOString().slice(0, 16),
-  )
+  const earliest = useClientValue(earliestSlot)
+  const timezone = useClientValue(browserTimezone)
   const { register, handleSubmit, formState: { errors } } = useForm()
 
   const book = useMutation({
@@ -49,30 +54,40 @@ function BookingForm() {
           email: values.email.trim(),
           phone: values.phone || null,
           preferred_at: new Date(values.preferred_at).toISOString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timezone: browserTimezone(),
           topic: values.topic || null,
         }),
       )}
       className="space-y-4"
       noValidate
+      toolname="book_consultation"
+      tooldescription="Request a free consultation call with Coach Auto (Autonomy Health and Fitness) about online strength and nutrition coaching, at a preferred date and time."
     >
       <Input
         label="Your name"
         error={errors.name?.message}
+        toolparamdescription="The person's name"
         {...register('name', { required: 'Enter your name.' })}
       />
       <Input
         label="Email"
         type="email"
         error={errors.email?.message}
+        toolparamdescription="Email address for the booking confirmation"
         {...register('email', { required: 'Enter your email address.' })}
       />
-      <Input label="Phone (optional)" type="tel" {...register('phone')} />
+      <Input
+        label="Phone (optional)"
+        type="tel"
+        toolparamdescription="Optional phone number"
+        {...register('phone')}
+      />
       <Input
         label="Preferred date and time"
         type="datetime-local"
         min={earliest || undefined}
-        hint={`Times are read in your own timezone (${Intl.DateTimeFormat().resolvedOptions().timeZone}).`}
+        hint={timezone ? `Times are read in your own timezone (${timezone}).` : 'Times are read in your own timezone.'}
+        toolparamdescription="Preferred call start, local date-time (YYYY-MM-DDTHH:MM), at least one day ahead"
         error={errors.preferred_at?.message}
         {...register('preferred_at', { required: 'Pick a date and time.' })}
       />
@@ -80,6 +95,7 @@ function BookingForm() {
         label="What would you like to talk about?"
         rows={3}
         placeholder="Your goals, your training history, anything you want to ask before starting."
+        toolparamdescription="What the person wants to discuss"
         {...register('topic')}
       />
       <Button type="submit" fullWidth loading={book.isPending}>
@@ -104,6 +120,7 @@ export default function ContactPage() {
   return (
     <Section tone="raised">
       <SectionHeading
+        as="h1"
         eyebrow="Get in touch"
         title="Talk to Coach Auto"
         description="Book a time to chat, or send a message and get a reply within one business day."
@@ -115,13 +132,13 @@ export default function ContactPage() {
           <Card>
             <CardBody>
               <Mail className="size-6 text-brand-500" aria-hidden="true" />
-              <h3 className="mt-4 text-xl">Email</h3>
+              <h2 className="mt-4 text-xl">Email</h2>
               <p className="mt-1.5 text-sm text-chalk-400">
                 Questions about programs, pricing or whether coaching suits you.
               </p>
               <a
                 href={`mailto:${SITE.email}`}
-                className="mt-3 inline-block text-sm font-medium text-brand-500 hover:underline"
+                className="mt-3 inline-block text-sm font-medium text-brand-400 hover:underline"
               >
                 {SITE.email}
               </a>
@@ -131,7 +148,7 @@ export default function ContactPage() {
           <Card>
             <CardBody>
               <Clock className="size-6 text-brand-500" aria-hidden="true" />
-              <h3 className="mt-4 text-xl">Reply times</h3>
+              <h2 className="mt-4 text-xl">Reply times</h2>
               <p className="mt-1.5 text-sm text-chalk-400">
                 Every message and booking request is answered personally by Coach Auto, usually
                 within one business day. Coaching is delivered online, worldwide.
@@ -142,7 +159,7 @@ export default function ContactPage() {
           <Card>
             <CardBody>
               <MessageSquare className="size-6 text-brand-500" aria-hidden="true" />
-              <h3 className="mt-4 text-xl">Already a client?</h3>
+              <h2 className="mt-4 text-xl">Already a client?</h2>
               <p className="mt-1.5 text-sm text-chalk-400">
                 Message your coach directly from inside the portal — it keeps your questions
                 attached to your program.

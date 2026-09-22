@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from '@/components/ui/Toast'
 import { Check, Lock, Mail } from 'lucide-react'
-import { Container, motion, fadeUp, inView, stagger } from '@/components/ui/Section'
+import { Container, motion, fadeUp, inViewProps, stagger } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
 import { Picture } from '@/components/ui/Picture'
 import { Input, Select, Textarea } from '@/components/ui/Field'
@@ -44,6 +45,8 @@ const PROMISES = [
 ]
 
 export function CtaForm({ heading = 'Ready to start your transformation?' }) {
+  // Frozen at mount: prerendered content stays visible, later mounts animate.
+  const [reveal] = useState(inViewProps)
   const {
     register,
     handleSubmit,
@@ -84,7 +87,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
       </div>
 
       <Container className="relative z-10">
-        <motion.div variants={stagger()} {...inView} className="grid gap-12 lg:grid-cols-2 lg:items-stretch lg:gap-20">
+        <motion.div variants={stagger()} {...reveal} className="grid gap-12 lg:grid-cols-2 lg:items-stretch lg:gap-20">
           <motion.div variants={fadeUp} className="flex flex-col">
             <div className="mb-4 flex items-center gap-3">
               <span className="h-0.5 w-8 bg-brand-500" aria-hidden="true" />
@@ -155,6 +158,9 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
             <form
               onSubmit={handleSubmit((values) => mutation.mutate(values))}
               noValidate
+              toolname="request_coaching_call"
+              tooldescription="Ask Coach Auto (Autonomy Health and Fitness) for a free coaching call about online strength, bodybuilding and nutrition coaching. Coach Auto replies by email."
+
               className="flex w-full flex-col gap-4 rounded-xl border border-ink-600 bg-ink-800/95 p-6 backdrop-blur sm:p-8"
             >
               <h3 className="font-display text-lg uppercase tracking-wide text-white">
@@ -165,6 +171,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 label="Full name"
                 required
                 autoComplete="name"
+                toolparamdescription="The person's full name"
                 {...register('full_name')}
                 error={errors.full_name?.message}
               />
@@ -174,6 +181,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 required
                 autoComplete="email"
                 placeholder="you@email.com"
+                toolparamdescription="Email address Coach Auto should reply to"
                 {...register('email')}
                 error={errors.email?.message}
               />
@@ -181,10 +189,16 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 label="Phone (optional)"
                 type="tel"
                 autoComplete="tel"
+                toolparamdescription="Optional phone number, international format"
                 {...register('phone')}
                 error={errors.phone?.message}
               />
-              <Select label="Level you are interested in" autoComplete="off" {...register('level_interest')}>
+              <Select
+                label="Level you are interested in"
+                autoComplete="off"
+                toolparamdescription="Coaching level: level_1 (beginner, 3 days a week), level_2 (intermediate, 4 days), level_3 (advanced, 5-6 days), or empty if unsure"
+                {...register('level_interest')}
+              >
                 <option value="">Not sure — help me choose</option>
                 <option value="level_1">Level 1 — Beginner, 3 days</option>
                 <option value="level_2">Level 2 — Intermediate, 4 days</option>
@@ -194,6 +208,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 label="Your main goal"
                 autoComplete="off"
                 placeholder="Lose fat, build strength, prep for stage…"
+                toolparamdescription="The person's main training goal"
                 {...register('primary_goal')}
                 error={errors.primary_goal?.message}
               />
@@ -202,6 +217,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
                 rows={5}
                 autoComplete="off"
                 placeholder="Training history, injuries, schedule…"
+                toolparamdescription="Optional context: training history, injuries, schedule"
                 {...register('message')}
               />
 

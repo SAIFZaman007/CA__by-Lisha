@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { m as motion, useInView, useReducedMotion } from 'motion/react'
 import { cn } from '@/lib/utils'
-import { REVEAL_FAILSAFE_MS, fadeUp, inView, stagger } from '@/lib/motion'
+import { REVEAL_FAILSAFE_MS, fadeUp, inView, inViewProps, stagger } from '@/lib/motion'
+import { skipEntranceAnimation } from '@/lib/ssr'
 
 export function Container({ className, children }) {
   return <div className={cn('mx-auto w-full max-w-7xl px-5 sm:px-8', className)}>{children}</div>
@@ -10,6 +11,8 @@ export function Container({ className, children }) {
 export function useReveal() {
   const ref = useRef(null)
   const reducedMotion = useReducedMotion()
+  // Prerendered content is already on screen: never hide it to fade it back.
+  const [alreadyPainted] = useState(skipEntranceAnimation)
   const observed = useInView(ref, { once: true, amount: 0 })
   const [failsafe, setFailsafe] = useState(false)
 
@@ -17,13 +20,14 @@ export function useReveal() {
   // anyway after a moment so content can never stay invisible. The state is
   // only set from the timer callback, never synchronously in the effect.
   useEffect(() => {
-    if (reducedMotion) return undefined
+    if (reducedMotion || alreadyPainted) return undefined
     const timer = setTimeout(() => setFailsafe(true), REVEAL_FAILSAFE_MS)
     return () => clearTimeout(timer)
-  }, [reducedMotion])
+  }, [reducedMotion, alreadyPainted])
 
-  const visible = reducedMotion || observed || failsafe
-  return [ref, { initial: reducedMotion ? false : 'hidden', animate: visible ? 'visible' : 'hidden' }]
+  const still = reducedMotion || alreadyPainted
+  const visible = still || observed || failsafe
+  return [ref, { initial: still ? false : 'hidden', animate: visible ? 'visible' : 'hidden' }]
 }
 
 export function Section({ id, tone = 'base', className, children }) {
@@ -55,6 +59,9 @@ export function SectionHeading({
   description,
   align = 'left',
   className,
+  // Each page needs exactly one <h1> (its main topic, for search engines and
+  // screen readers). Pass as="h1" on the page's top heading.
+  as: Heading = 'h2',
 }) {
   return (
     <motion.div
@@ -68,10 +75,10 @@ export function SectionHeading({
         </div>
       )}
 
-      <h2 className="text-balance text-4xl leading-[0.95] sm:text-5xl lg:text-6xl">
+      <Heading className="text-balance text-4xl leading-[0.95] sm:text-5xl lg:text-6xl">
         <span className="block text-white">{title}</span>
         {accent && <span className="block text-brand-500 text-glow-brand">{accent}</span>}
-      </h2>
+      </Heading>
 
       {description && (
         <p
@@ -87,4 +94,4 @@ export function SectionHeading({
   )
 }
 
-export { motion, fadeUp, inView, stagger }
+export { motion, fadeUp, inView, inViewProps, stagger }

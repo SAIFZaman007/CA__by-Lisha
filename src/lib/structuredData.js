@@ -5,13 +5,33 @@ const BASE = SITE.url
 /** Stable node ids, so separate blocks on separate pages describe one entity. */
 export const ORG_ID = `${BASE}/#organization`
 export const SITE_ID = `${BASE}/#website`
+export const COACH_ID = `${BASE}/#coach`
+
+/** The coach, as a Person — what lets a search for her name find this site. */
+export const personSchema = () =>
+  SITE.coach?.name
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        '@id': COACH_ID,
+        name: SITE.coach.name,
+        jobTitle: SITE.coach.jobTitle,
+        url: `${BASE}/about`,
+        image: `${BASE}/images/hero-portrait.png`,
+        worksFor: { '@id': ORG_ID },
+        knowsAbout: ['Strength training', 'Bodybuilding', 'Nutrition coaching'],
+        ...(SITE.sameAs?.length ? { sameAs: SITE.sameAs } : {}),
+      }
+    : null
 
 export const organizationSchema = () => ({
   '@context': 'https://schema.org',
   '@type': ['Organization', 'HealthAndBeautyBusiness'],
   '@id': ORG_ID,
   name: SITE.brand,
+  alternateName: SITE.alternateNames,
   legalName: SITE.business,
+  description: SITE.description,
   url: BASE,
   logo: {
     '@type': 'ImageObject',
@@ -19,6 +39,7 @@ export const organizationSchema = () => ({
   },
   image: `${BASE}/images/og-cover.jpg`,
   email: SITE.email,
+  ...(SITE.coach?.name ? { founder: { '@id': COACH_ID } } : {}),
   // Official profiles (Google Business Profile, etc.) go in SITE.sameAs.
   ...(SITE.sameAs?.length ? { sameAs: SITE.sameAs } : {}),
   areaServed: {

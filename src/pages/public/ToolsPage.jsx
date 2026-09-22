@@ -49,6 +49,7 @@ export default function ToolsPage() {
     <>
       <Section tone="raised">
         <SectionHeading
+          as="h1"
           eyebrow="Free tools"
           title="Calorie, macro & BMI calculators"
           description="The same calculators your coach uses to set your targets. Free to use, no account needed."
