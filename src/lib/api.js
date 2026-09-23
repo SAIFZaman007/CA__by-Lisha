@@ -1,18 +1,5 @@
 import axios from 'axios'
 
-/**
- * Resolve the API base URL once, safely.
- *
- * `VITE_API_URL` is optional. Blank (the default in every .env file) means the
- * API is served from the same origin under `/api/v1` — the Vite dev proxy
- * locally, nginx in production. It may also hold a full base
- * (`https://api.example.com/api/v1`) or just an origin
- * (`http://localhost:8000`), and `/api/v1` is appended when missing.
- *
- * `??` is not enough here: Vite turns `VITE_API_URL=` into an empty string,
- * which `??` keeps, so every request went to `/programs` instead of
- * `/api/v1/programs` and 404'd.
- */
 function resolveApiBase(raw) {
   const value = String(raw ?? '').trim().replace(/\/+$/, '')
   if (!value) return '/api/v1'
@@ -30,6 +17,7 @@ export const http = axios.create({
 
 let accessToken = null
 let onSessionLost = () => {}
+let onPaywall = () => {}
 
 export function setAccessToken(token) {
   accessToken = token
@@ -39,6 +27,23 @@ export function getAccessToken() {
 }
 export function onUnauthenticated(handler) {
   onSessionLost = handler
+}
+
+export function onSubscriptionRequired(handler) {
+  onPaywall = handler
+}
+
+export function subscriptionRequirement(error) {
+  if (error?.response?.status !== 402) return null
+  const detail = error.response.data?.detail
+  return {
+    code: 'subscription_required',
+    feature: null,
+    message: 'To get direct coaching, please get suitable program...',
+    upgrade_path: '/portal/billing',
+    ...(typeof detail === 'object' && detail !== null ? detail : {}),
+    ...(typeof detail === 'string' ? { message: detail } : {}),
+  }
 }
 
 http.interceptors.request.use((config) => {
@@ -54,6 +59,9 @@ http.interceptors.response.use(
     const original = error.config
     const status = error.response?.status
     const isAuthRoute = original?.url?.includes('/auth/')
+
+    // Paid coaching, unpaid account. Surface it once, centrally.
+    if (status === 402) onPaywall(subscriptionRequirement(error))
 
     if (status === 401 && !original?._retried && !isAuthRoute) {
       original._retried = true
@@ -81,6 +89,8 @@ export function errorMessage(error, fallback = 'Something went wrong. Try again.
   const data = error?.response?.data
   if (data?.fields) return Object.values(data.fields)[0]
   if (typeof data?.detail === 'string') return data.detail
+  // Structured details (the 402 upgrade prompt) carry their sentence inside.
+  if (typeof data?.detail?.message === 'string') return data.detail.message
   if (error?.code === 'ECONNABORTED') return 'That took too long. Check your connection and retry.'
   if (!error?.response) return 'Cannot reach the server. Check your connection.'
   return fallback

@@ -21,6 +21,14 @@
 # upstream that does not answer — which is where the 502s came from. Pick one
 # shape and configure both halves of it.
 
+# Crawler responses are cached here so a sitemap fetch never depends on the API
+# being awake at that exact second. `proxy_cache_path` is an http-level
+# directive, and this file is included from inside `http {}` — see the image's
+# /etc/nginx/nginx.conf. One megabyte of keys is thousands of entries; the
+# sitemap is one of them.
+proxy_cache_path /var/cache/nginx/seo levels=1:2 keys_zone=seo_cache:1m
+                 max_size=16m inactive=24h use_temp_path=off;
+
 server {
     listen 8080;
     server_name _;
@@ -147,18 +155,52 @@ server {
     # The sitemap comes live from the API (it lists the coach's current
     # programmes and gallery), with the build-time copy as an automatic
     # fallback, so a slow or restarting API never serves crawlers an error.
+    #
+    # Search Console reports "Couldn't fetch" for ANY hiccup on this one URL —
+    # a timeout, a 4xx, a backend mid-restart — and then stops reading the
+    # sitemap until it is resubmitted. So the request Google makes must not be
+    # able to fail:
+    #
+    #   1. A cached copy answers most fetches outright: no API call at all.
+    #   2. A stale copy is served while a refresh happens in the background,
+    #      and whenever the API errors, times out or rate-limits.
+    #   3. Any status other than a good 200 falls through to the sitemap
+    #      written into this image at build time, which lists every page and
+    #      programme that existed at deploy. A crawler gets XML either way.
+    #
+    # `proxy_hide_header` drops the API's own caching and robots headers: they
+    # describe an API response, not a document meant to be read by crawlers.
     location = /sitemap.xml {
         resolver 127.0.0.11 valid=30s ipv6=off;
         set $seo_upstream ${API_UPSTREAM};
         proxy_pass $seo_upstream/api/v1/meta/sitemap.xml;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_connect_timeout 3s;
-        proxy_read_timeout 5s;
+        proxy_set_header Accept-Encoding "";
+
+        proxy_connect_timeout 2s;
+        proxy_send_timeout 4s;
+        proxy_read_timeout 4s;
+
+        proxy_cache seo_cache;
+        proxy_cache_key "sitemap";
+        proxy_cache_valid 200 1h;
+        proxy_cache_lock on;
+        proxy_cache_background_update on;
+        proxy_cache_use_stale error timeout updating
+                              http_403 http_429 http_500 http_502 http_503 http_504;
+
+        proxy_hide_header Cache-Control;
+        proxy_hide_header X-Robots-Tag;
+        proxy_hide_header Content-Security-Policy;
+        expires 1h;
+
         proxy_intercept_errors on;
-        error_page 404 500 502 503 504 = @sitemap_fallback;
+        error_page 400 401 403 404 405 408 429 500 501 502 503 504 = @sitemap_fallback;
     }
 
+    # The build-time sitemap: a real file on disk, which cannot be slow and
+    # cannot be down while this server is answering at all.
     location @sitemap_fallback {
         expires 1h;
         try_files /sitemap.xml =404;

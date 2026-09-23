@@ -4,6 +4,8 @@ import { Navigate, Route, Routes, useLocation } from 'react-router'
 import { useAuth } from '@/store/auth'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { PortalLayout } from '@/components/portal/PortalLayout'
+import { FeatureGate } from '@/components/portal/FeatureGate'
+import { FEATURES } from '@/lib/entitlement'
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary'
 import { FullPageSpinner } from '@/components/ui/Spinner'
 import { ToastHost } from '@/components/ui/Toast'
@@ -175,14 +177,72 @@ export default function App() {
                 </RequireAuth>
               }
             >
-              <Route index element={<Dashboard />} />
-              <Route path="workout" element={<WorkoutPage />} />
-              <Route path="meal-plan" element={<MealPlanPage />} />
-              <Route path="progress" element={<ProgressPage />} />
-              <Route path="sleep-cardio" element={<WellnessPage />} />
-              <Route path="tutorials" element={<TutorialsPage />} />
+              {/*
+                Paid coaching. `FeatureGate` shows the upgrade panel instead of
+                the page for a client with no live plan; the API refuses the
+                same routes with 402 regardless of what the browser renders.
+
+                Calculators, Billing and Profile stay open — the free tools are
+                the reason to sign up, and locking Billing would lock people
+                out of the page they buy a plan on.
+              */}
+              <Route
+                index
+                element={
+                  <FeatureGate feature={FEATURES.dashboard}>
+                    <Dashboard />
+                  </FeatureGate>
+                }
+              />
+              <Route
+                path="workout"
+                element={
+                  <FeatureGate feature={FEATURES.workouts}>
+                    <WorkoutPage />
+                  </FeatureGate>
+                }
+              />
+              <Route
+                path="meal-plan"
+                element={
+                  <FeatureGate feature={FEATURES.mealPlan}>
+                    <MealPlanPage />
+                  </FeatureGate>
+                }
+              />
+              <Route
+                path="progress"
+                element={
+                  <FeatureGate feature={FEATURES.progress}>
+                    <ProgressPage />
+                  </FeatureGate>
+                }
+              />
+              <Route
+                path="sleep-cardio"
+                element={
+                  <FeatureGate feature={FEATURES.sleepCardio}>
+                    <WellnessPage />
+                  </FeatureGate>
+                }
+              />
+              <Route
+                path="tutorials"
+                element={
+                  <FeatureGate feature={FEATURES.tutorials}>
+                    <TutorialsPage />
+                  </FeatureGate>
+                }
+              />
+              <Route
+                path="messages"
+                element={
+                  <FeatureGate feature={FEATURES.messaging}>
+                    <MessagesPage />
+                  </FeatureGate>
+                }
+              />
               <Route path="calculators" element={<CalculatorsPage />} />
-              <Route path="messages" element={<MessagesPage />} />
               <Route path="billing" element={<BillingPage />} />
               <Route path="profile" element={<ProfilePage />} />
             </Route>
