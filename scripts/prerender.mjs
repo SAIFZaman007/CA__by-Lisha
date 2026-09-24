@@ -209,6 +209,52 @@ ${urls}
 `
 }
 
+/**
+ * Fail the build rather than ship a sitemap a crawler cannot read.
+ *
+ * Search Console's "Sitemap could not be read" gives no detail and costs days
+ * of guessing, so the checks that would have caught it run here, at build
+ * time, where the failure is loud and local: a declaration on the very first
+ * byte (no BOM, no leading blank line), one <loc> per route, every URL
+ * absolute on this site, and no unescaped ampersand — the classic way a
+ * generated sitemap stops being XML.
+ */
+function assertValidSitemap(xml, expectedUrls) {
+  const problems = []
+
+  if (!xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>\n')) {
+    problems.push('the XML declaration must be the first thing in the file')
+  }
+  if (xml.charCodeAt(0) === 0xfeff) problems.push('the file starts with a byte order mark')
+  if (!xml.includes('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')) {
+    problems.push('the <urlset> element is missing its sitemap namespace')
+  }
+
+  const locs = [...xml.matchAll(/<loc>([^<]*)<\/loc>/g)].map((match) => match[1])
+  if (locs.length !== expectedUrls) {
+    problems.push(`expected ${expectedUrls} <loc> entries, found ${locs.length}`)
+  }
+  for (const loc of locs) {
+    if (!loc.startsWith(`${SITE_URL}/`) && loc !== `${SITE_URL}/`) {
+      problems.push(`"${loc}" is not an absolute URL on ${SITE_URL}`)
+    }
+  }
+
+  // Ampersands must be entities; a raw one ends the document for a parser.
+  const rawAmp = xml.replace(/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);/g, '')
+  if (rawAmp.includes('&')) problems.push('an unescaped "&" is present')
+
+  // Control characters are not legal XML and survive every copy-paste.
+  // eslint-disable-next-line no-control-regex
+  if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(xml)) {
+    problems.push('the file contains control characters')
+  }
+
+  if (problems.length) {
+    throw new Error(`[prerender] sitemap.xml is not valid:\n  - ${problems.join('\n  - ')}`)
+  }
+}
+
 function robotsTxt() {
   // Plain ASCII only: some crawlers (and browsers without a charset header)
   // read robots.txt as Latin-1.
@@ -333,7 +379,9 @@ async function main() {
   }
 
   await writeFile(path.join(dist, 'robots.txt'), robotsTxt())
-  await writeFile(path.join(dist, 'sitemap.xml'), sitemapXml(routes))
+  const sitemap = sitemapXml(routes)
+  assertValidSitemap(sitemap, routes.length)
+  await writeFile(path.join(dist, 'sitemap.xml'), sitemap)
   const llms = llmsTxt(programs)
   await writeFile(path.join(dist, 'llms.txt'), llms)
   await writeFile(

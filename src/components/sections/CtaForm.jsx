@@ -166,7 +166,7 @@ export function CtaForm({ heading = 'Ready to start your transformation?' }) {
               className="flex w-full flex-col gap-4 rounded-xl border border-ink-600 bg-ink-800/95 p-6 backdrop-blur sm:p-8"
             >
               <h3 className="font-display text-lg uppercase tracking-wide text-white">
-                Get a coaching call
+                Get in touch with Coach Auto
               </h3>
 
               <Input

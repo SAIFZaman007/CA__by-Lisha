@@ -155,27 +155,47 @@ server {
     # The sitemap comes live from the API (it lists the coach's current
     # programmes and gallery), with the build-time copy as an automatic
     # fallback, so a slow or restarting API never serves crawlers an error.
+    # Search Console fetched this URL and answered "Sitemap could not be read":
+    # the bytes that arrived were not parseable XML. The XML itself is valid —
+    # it is generated and checked at build time — so what broke it was the trip
+    # between the file and Google: a proxy hop to the API, that response being
+    # gzipped by the API and re-framed by nginx, then a second compression
+    # decision at Coolify's TLS edge. Any one of those mangling the body, or
+    # answering with an HTML error page, produces exactly this message.
     #
-    # Search Console reports "Couldn't fetch" for ANY hiccup on this one URL —
-    # a timeout, a 4xx, a backend mid-restart — and then stops reading the
-    # sitemap until it is resubmitted. So the request Google makes must not be
-    # able to fail:
+    # So the hop is gone. `/sitemap.xml` is now a file on disk, written by the
+    # build (scripts/prerender.mjs) and listing every public page and coaching
+    # programme. It is served with no proxy, no upstream, no compression and an
+    # explicit XML content type — the bytes Google reads are the bytes in the
+    # image. This cannot time out, cannot be rate-limited and cannot return
+    # HTML.
     #
-    #   1. A cached copy answers most fetches outright: no API call at all.
-    #   2. A stale copy is served while a refresh happens in the background,
-    #      and whenever the API errors, times out or rate-limits.
-    #   3. Any status other than a good 200 falls through to the sitemap
-    #      written into this image at build time, which lists every page and
-    #      programme that existed at deploy. A crawler gets XML either way.
-    #
-    # `proxy_hide_header` drops the API's own caching and robots headers: they
-    # describe an API response, not a document meant to be read by crawlers.
+    # `gzip off` is deliberate for this one file. It is a couple of kilobytes;
+    # compressing it saves nothing and is the single most common way a sitemap
+    # reaches a crawler as unreadable bytes.
     location = /sitemap.xml {
+        types { }
+        default_type "application/xml";
+        charset utf-8;
+        gzip off;
+        expires 1h;
+        try_files /sitemap.xml =404;
+    }
+
+    # The database-driven sitemap — the same pages plus every published gallery
+    # photo as an <image:image> entry, refreshed without a deploy. Not the one
+    # submitted to Search Console: it is here so image indexing can be turned on
+    # deliberately, by submitting this URL as a SECOND sitemap once the static
+    # one above is reading cleanly. Cached for an hour, served stale whenever
+    # the API is slow, restarting or rate-limiting, and falling back to the
+    # static file rather than ever handing a crawler an error.
+    location = /sitemap-live.xml {
         resolver 127.0.0.11 valid=30s ipv6=off;
         set $seo_upstream ${API_UPSTREAM};
         proxy_pass $seo_upstream/api/v1/meta/sitemap.xml;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-Proto $scheme;
+        # No compression on the hop: nginx sends this body on unchanged.
         proxy_set_header Accept-Encoding "";
 
         proxy_connect_timeout 2s;
@@ -183,7 +203,7 @@ server {
         proxy_read_timeout 4s;
 
         proxy_cache seo_cache;
-        proxy_cache_key "sitemap";
+        proxy_cache_key "sitemap-live";
         proxy_cache_valid 200 1h;
         proxy_cache_lock on;
         proxy_cache_background_update on;
@@ -193,6 +213,7 @@ server {
         proxy_hide_header Cache-Control;
         proxy_hide_header X-Robots-Tag;
         proxy_hide_header Content-Security-Policy;
+        gzip off;
         expires 1h;
 
         proxy_intercept_errors on;
@@ -202,6 +223,9 @@ server {
     # The build-time sitemap: a real file on disk, which cannot be slow and
     # cannot be down while this server is answering at all.
     location @sitemap_fallback {
+        types { }
+        default_type "application/xml";
+        gzip off;
         expires 1h;
         try_files /sitemap.xml =404;
     }
