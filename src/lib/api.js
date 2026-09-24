@@ -157,6 +157,10 @@ export const api = {
   dashboard: { get: () => get('/dashboard') },
   workouts: {
     plan: () => get('/workouts/plan'),
+    // The training intake: the answers, and the plan built from them.
+    intake: () => get('/workouts/intake'),
+    saveIntake: (body) => put('/workouts/intake', body),
+    generatePlan: () => post('/workouts/plan/generate'),
     plans: () => get('/workouts/plans'),
     createCustom: (body) => post('/workouts/plans/custom', body),
     activate: (id) => post(`/workouts/plans/${id}/activate`),

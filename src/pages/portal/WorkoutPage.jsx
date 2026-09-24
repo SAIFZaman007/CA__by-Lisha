@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { m as motion, AnimatePresence } from 'motion/react'
-import { Check, ChevronDown, Dumbbell, PlayCircle, Plus } from 'lucide-react'
+import { Check, ChevronDown, Dumbbell, PlayCircle, Plus, SlidersHorizontal, Sparkles } from 'lucide-react'
 
 import { api, errorMessage } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
@@ -10,6 +10,7 @@ import { cn, kgToLb, lbToKg, todayIndex } from '@/lib/utils'
 import { Card, CardHeader, CardBody, EmptyState, Skeleton } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { PageHeading } from '@/components/portal/PortalLayout'
+import { IntakeForm } from '@/components/portal/IntakeForm'
 import { toast } from '@/components/ui/Toast'
 
 /** One prescribed movement, with its set log expanded underneath. */
@@ -222,6 +223,8 @@ export default function WorkoutPage() {
   const units = useAuth((s) => s.user?.profile?.unit_system ?? 'imperial')
   const [activeDayId, setActiveDayId] = useState(null)
 
+  const [editingIntake, setEditingIntake] = useState(false)
+
   const { data: plan, isLoading } = useQuery({
     queryKey: keys.workoutPlan,
     queryFn: api.workouts.plan,
@@ -271,24 +274,21 @@ export default function WorkoutPage() {
 
   if (isLoading) return <Skeleton className="h-96 w-full" />
 
+  // No plan yet: the intake IS the page. A client who has just paid should be
+  // one form away from training, not reading an empty state that tells them to
+  // wait — which is where this screen used to leave them.
   if (!plan) {
     return (
       <>
-        <PageHeading eyebrow="Training" title="My workout program" />
-        <Card>
-          <CardBody>
-            <EmptyState
-              icon={Dumbbell}
-              title="No program assigned yet"
-              description="Complete your intake — height, weight, measurements and starting photos — and Coach Auto will build your first block."
-              action={
-                <Button to="/portal/profile" size="sm">
-                  Complete my intake
-                </Button>
-              }
-            />
-          </CardBody>
-        </Card>
+        <PageHeading
+          eyebrow="Training"
+          title="Build my program"
+        />
+        <p className="mb-6 max-w-2xl text-sm text-chalk-400">
+          Answer these once and your training plan is ready immediately — built around your
+          body, your goal, the days you can train and the equipment you can actually reach.
+        </p>
+        <IntakeForm />
       </>
     )
   }
@@ -298,7 +298,44 @@ export default function WorkoutPage() {
       <PageHeading
         eyebrow={`${plan.level.replace('level_', 'Level ')} program — week ${plan.week_number}`}
         title="My workout program"
+        action={
+          <Button
+            size="sm"
+            variant="subtle"
+            onClick={() => setEditingIntake((open) => !open)}
+            aria-expanded={editingIntake}
+          >
+            <SlidersHorizontal className="size-4" aria-hidden="true" />
+            {editingIntake ? 'Close' : 'Update my intake'}
+          </Button>
+        }
       />
+
+      {/* An automatic block says so, and says what it was built from. A plan
+          the coach wrote carries their note instead and is never rebuilt from
+          here. */}
+      {plan.source === 'auto' && !editingIntake && (
+        <p className="mb-6 flex items-start gap-2 rounded-lg border border-ink-700 bg-ink-850 px-4 py-3 text-xs text-chalk-400">
+          <Sparkles className="mt-0.5 size-3.5 shrink-0 text-brand-500" aria-hidden="true" />
+          <span>
+            Built automatically from your intake. Changed gym, goal or schedule?{' '}
+            <button
+              type="button"
+              onClick={() => setEditingIntake(true)}
+              className="font-semibold text-brand-400 underline-offset-2 hover:underline"
+            >
+              Update your answers
+            </button>{' '}
+            and it rebuilds around them.
+          </span>
+        </p>
+      )}
+
+      {editingIntake && (
+        <div className="mb-6">
+          <IntakeForm compact onDone={() => setEditingIntake(false)} />
+        </div>
+      )}
 
       {/* Day switcher */}
       <div className="mb-6 flex gap-3 overflow-x-auto pb-1 scrollbar-thin">

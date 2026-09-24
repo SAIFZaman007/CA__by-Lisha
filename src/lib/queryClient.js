@@ -28,6 +28,7 @@ export const keys = {
   programs: ['programs'],
   testimonials: ['testimonials'],
   workoutPlan: ['workouts', 'plan'],
+  workoutIntake: ['workouts', 'intake'],
   sessions: (days) => ['workouts', 'sessions', days],
   exercises: (params) => ['exercises', params],
   mealPlan: ['nutrition', 'plan'],
