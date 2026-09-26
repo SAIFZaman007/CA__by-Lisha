@@ -2,7 +2,7 @@ import { ArrowRight, Play, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Picture } from '@/components/ui/Picture'
 import { Container } from '@/components/ui/Section'
-import { STATS } from '@/data/site'
+import { SITE, STATS } from '@/data/site'
 
 /**
  * Split editorial hero.
@@ -27,6 +27,10 @@ import { STATS } from '@/data/site'
  * - The portrait is a responsive AVIF/WebP `<picture>` (≈35–80 KB on a phone)
  *   instead of a 2.6 MB PNG, and is preloaded from index.html.
  */
+// The coach's name if the site shows it (SITE.coach.name may be blanked to
+// keep it off the site), otherwise the brand.
+const COACH_NAME = SITE.coach?.name || SITE.brand
+
 export function Hero() {
   return (
     <section className="relative isolate flex min-h-[92vh] items-center overflow-hidden pt-28 pb-16 lg:pt-32">
@@ -51,12 +55,18 @@ export function Hero() {
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* --- Copy ------------------------------------------------------ */}
           <div>
-            <div className="hero-rise mb-6 flex items-center gap-3">
-              <span className="h-0.5 w-10 bg-brand-500" aria-hidden="true" />
-              <span className="eyebrow text-chalk-200">Autonomy Health &amp; Fitness</span>
-            </div>
-
+            {/* The brand names live INSIDE the <h1>. The page's main heading is
+                one of the strongest relevance signals a search engine reads,
+                and the slogan alone ("Built on discipline…") told Google
+                nothing about who this is. Same visual as the old eyebrow line —
+                only the semantics changed. */}
             <h1 className="text-balance text-5xl leading-[0.92] sm:text-6xl xl:text-7xl">
+              <span className="hero-rise mb-6 flex items-center gap-3 leading-normal">
+                <span className="h-0.5 w-10 shrink-0 bg-brand-500" aria-hidden="true" />
+                <span className="eyebrow text-chalk-200">
+                  {SITE.brand} <span aria-hidden="true">·</span> Autonomy Fitness
+                </span>
+              </span>
               {[
                 { line: 'Built on', accent: false },
                 { line: 'discipline.', accent: true },
@@ -71,14 +81,18 @@ export function Hero() {
                   <span className={accent ? 'text-brand-500 text-glow-brand' : 'text-white'}>
                     {line}
                   </span>
+                  {/* Invisible at the end of a block line, but keeps the words
+                      apart in the text a crawler extracts ("Built on
+                      discipline.", not "Built ondiscipline."). */}{' '}
                 </span>
               ))}
             </h1>
 
             <p className="mt-7 max-w-xl text-base leading-relaxed text-chalk-200 sm:text-lg">
-              Online strength and bodybuilding coaching for lifters at every level. A programme
-              written for you, a meal plan that fits your week, and a coach reading your numbers
-              every single week.
+              Online strength and bodybuilding coaching from certified coach{' '}
+              <strong className="font-semibold text-white">{COACH_NAME}</strong>, for lifters at
+              every level. A programme written for you, a meal plan that fits your week, and a
+              coach reading your numbers every single week.
             </p>
 
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
@@ -108,7 +122,7 @@ export function Hero() {
             <figure className="relative aspect-4/5 overflow-hidden rounded-2xl border border-ink-600 shadow-2xl shadow-black/60">
               <Picture
                 name="hero-portrait"
-                alt="Lisha Chesson, Coach Auto's strength coach, training in her gym"
+                alt={`${COACH_NAME}, strength coach and founder of ${SITE.brand}, training in her gym`}
                 sizes="(min-width: 1024px) 40vw, (min-width: 480px) 448px, 92vw"
                 priority
                 // Eager (it is the desktop LCP), but not "high": on a phone the
@@ -126,10 +140,10 @@ export function Hero() {
               <figcaption className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5">
                 <span>
                   <span className="block font-display text-lg font-bold tracking-wide text-white">
-                    Coach Auto
+                    {COACH_NAME}
                   </span>
                   <span className="block text-xs text-chalk-400">
-                    Certified coach
+                    {SITE.brand} · Certified coach
                   </span>
                 </span>
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-500/90 text-white">

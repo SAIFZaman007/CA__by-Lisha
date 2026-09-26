@@ -10,15 +10,17 @@ import { Calculators } from '@/components/sections/Calculators'
 import { Section, SectionHeading } from '@/components/ui/Section'
 import { useSeo } from '@/lib/seo'
 import { faqSchema } from '@/lib/structuredData'
-import { FAQS } from '@/data/site'
+import { FAQS, KEYWORDS } from '@/data/site'
 
 export default function Home() {
   useSeo({
     // No per-page title: the home page uses SITE.defaultTitle, which carries
-    // every brand name people search for (Coach Auto, Autonomy Health & Fitness).
+    // every name people search for — Coach Auto, Autonomy Fitness and the
+    // coach, Lisha Chesson.
     description:
-      'Coach Auto by Autonomy Health & Fitness: online strength, bodybuilding and nutrition coaching. Personalised programmes, meal plans and weekly progress reviews.',
+      'Coach Auto (Autonomy Fitness): online strength and nutrition coaching by certified coach Lisha Chesson. Custom programmes, meal plans and weekly reviews.',
     path: '/',
+    keywords: KEYWORDS.home,
     jsonLd: faqSchema(FAQS),
   })
 

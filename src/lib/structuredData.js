@@ -7,7 +7,8 @@ export const ORG_ID = `${BASE}/#organization`
 export const SITE_ID = `${BASE}/#website`
 export const COACH_ID = `${BASE}/#coach`
 
-/** The coach, as a Person — what lets a search for her name find this site. */
+const absolute = (path) => (/^https?:\/\//.test(path) ? path : `${BASE}${path}`)
+
 export const personSchema = () =>
   SITE.coach?.name
     ? {
@@ -15,32 +16,62 @@ export const personSchema = () =>
         '@type': 'Person',
         '@id': COACH_ID,
         name: SITE.coach.name,
+        ...(SITE.coach.alternateName ? { alternateName: SITE.coach.alternateName } : {}),
         jobTitle: SITE.coach.jobTitle,
+        description: SITE.coach.description,
         url: `${BASE}/about`,
-        image: `${BASE}/images/hero-portrait.png`,
+        image: absolute(SITE.coach.image ?? '/images/hero-portrait.png'),
         worksFor: { '@id': ORG_ID },
-        knowsAbout: ['Strength training', 'Bodybuilding', 'Nutrition coaching'],
+        ...(SITE.coach.credential
+          ? {
+              hasCredential: {
+                '@type': 'EducationalOccupationalCredential',
+                name: SITE.coach.credential,
+                credentialCategory: 'certification',
+              },
+            }
+          : {}),
+        knowsAbout: [
+          'Strength training',
+          'Bodybuilding',
+          'Online personal training',
+          'Nutrition coaching',
+          'Meal planning',
+        ],
         ...(SITE.sameAs?.length ? { sameAs: SITE.sameAs } : {}),
       }
     : null
 
+/**
+ * The business. `OnlineBusiness` rather than a LocalBusiness subtype: the
+ * coaching is delivered online with no public premises, and a LocalBusiness
+ * with no address is a contradiction Search Console flags.
+ */
 export const organizationSchema = () => ({
   '@context': 'https://schema.org',
-  '@type': ['Organization', 'HealthAndBeautyBusiness'],
+  '@type': ['Organization', 'OnlineBusiness'],
   '@id': ORG_ID,
   name: SITE.brand,
   alternateName: SITE.alternateNames,
   legalName: SITE.business,
   description: SITE.description,
-  url: BASE,
+  slogan: SITE.slogan,
+  url: `${BASE}/`,
   logo: {
     '@type': 'ImageObject',
     url: `${BASE}/images/logo-lockup-light.png`,
   },
   image: `${BASE}/images/og-cover.jpg`,
   email: SITE.email,
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'customer support',
+    email: SITE.email,
+    url: `${BASE}/contact`,
+    availableLanguage: ['en'],
+  },
   ...(SITE.coach?.name ? { founder: { '@id': COACH_ID } } : {}),
-  // Official profiles (Google Business Profile, etc.) go in SITE.sameAs.
+  // Official profiles (YouTube, Facebook, LinkedIn…) come from VITE_SAME_AS.
   ...(SITE.sameAs?.length ? { sameAs: SITE.sameAs } : {}),
   areaServed: {
     '@type': 'Place',
@@ -49,22 +80,62 @@ export const organizationSchema = () => ({
   knowsAbout: [
     'Strength training',
     'Online personal training',
+    'Bodybuilding coaching',
     'Nutrition coaching',
     'Progressive overload',
     'Body recomposition',
   ],
 })
 
-/** The site, with a search action so a sitelinks search box is possible. */
+/**
+ * The site. `name` + `alternateName` are exactly what Google reads to choose
+ * the "site name" shown above every result — so "Autonomy Fitness" is offered
+ * to it explicitly instead of left for it to infer.
+ */
 export const websiteSchema = () => ({
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   '@id': SITE_ID,
-  url: BASE,
+  url: `${BASE}/`,
   name: SITE.brand,
+  alternateName: ['Autonomy Fitness', 'Autonomy Health and Fitness', 'Coach Auto Fitness'],
+  description: SITE.description,
   publisher: { '@id': ORG_ID },
   inLanguage: 'en',
 })
+
+const withoutContext = (node) => {
+  if (!node) return null
+  const { '@context': _ignored, ...rest } = node
+  return rest
+}
+
+/**
+ * Organization + WebSite + Person as one linked graph. `buildSeo` puts it on
+ * every indexable page, so each page restates who publishes it with the same
+ * stable `@id`s — one entity, however a crawler arrives.
+ */
+export const siteGraph = () => ({
+  '@context': 'https://schema.org',
+  '@graph': [organizationSchema(), websiteSchema(), personSchema()]
+    .map(withoutContext)
+    .filter(Boolean),
+})
+
+/** The About page as the coach's profile page (Google's ProfilePage type). */
+export const profilePageSchema = () =>
+  SITE.coach?.name
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ProfilePage',
+        '@id': `${BASE}/about#profile`,
+        url: `${BASE}/about`,
+        name: `About ${SITE.coach.name} — ${SITE.brand}`,
+        isPartOf: { '@id': SITE_ID },
+        mainEntity: { '@id': COACH_ID },
+        about: { '@id': ORG_ID },
+      }
+    : null
 
 export const programSchema = (program) => ({
   '@context': 'https://schema.org',

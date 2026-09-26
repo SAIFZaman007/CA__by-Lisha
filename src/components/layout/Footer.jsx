@@ -1,18 +1,47 @@
 import { Link } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Mail } from 'lucide-react'
 import { LogoStacked } from './Logo'
 import { SITE } from '@/data/site'
+import { api } from '@/lib/api'
+import { keys } from '@/lib/queryClient'
+
+const LEVEL_SHORT = { level_1: 'Level 1', level_2: 'Level 2', level_3: 'Level 3' }
+
+/**
+ * Programme links come from the live catalogue, not hard-coded slugs.
+ *
+ * The old list pointed at fixed URLs. A slug is regenerated when the coach
+ * renames a plan, so a hard-coded link silently became a "programme not
+ * found" page — linked from the footer of every page on the site, which is
+ * the worst place for a crawler to find a soft 404. Same query key as the
+ * home and programmes pages, so this costs no extra request there, and the
+ * prerender bakes the real links into the HTML.
+ */
+function useProgrammeLinks() {
+  const { data } = useQuery({ queryKey: keys.programs, queryFn: api.site.programs })
+  const programmes = Array.isArray(data) ? data : (data?.items ?? [])
+  return [
+    { to: '/programs', label: 'All programmes' },
+    ...programmes
+      .filter((programme) => programme.slug)
+      .slice(0, 5)
+      .map((programme) => {
+        // "Level 1 — Strength Foundation" → "Level 1 — Foundation"-style
+        // short labels when the name follows that pattern; the full name
+        // otherwise.
+        const name = programme.name ?? ''
+        const suffix = name.includes('—') ? name.split('—').pop().trim() : ''
+        const level = LEVEL_SHORT[programme.level]
+        return {
+          to: `/programs/${programme.slug}`,
+          label: level && suffix ? `${level} — ${suffix}` : name,
+        }
+      }),
+  ]
+}
 
 const COLUMNS = [
-  {
-    title: 'Coaching',
-    links: [
-      { to: '/programs', label: 'All programmes' },
-      { to: '/programs/level-1-strength-foundation', label: 'Level 1 — Foundation' },
-      { to: '/programs/level-2-strength-builder', label: 'Level 2 — Builder' },
-      { to: '/programs/level-3-competition-prep', label: 'Level 3 — Advanced' },
-    ],
-  },
   {
     title: 'Tools',
     links: [
@@ -33,6 +62,9 @@ const COLUMNS = [
 ]
 
 export function Footer() {
+  const programmeLinks = useProgrammeLinks()
+  const columns = [{ title: 'Coaching', links: programmeLinks }, ...COLUMNS]
+
   return (
     <footer className="border-t border-ink-600 bg-ink-950">
       <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
@@ -42,6 +74,22 @@ export function Footer() {
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-chalk-400">
               Online strength and bodybuilding coaching. Programmes written by hand, reviewed
               every week, built to make you stronger than you were.
+            </p>
+            {/* One plain sentence naming every alias of the business and its
+                coach, on every page. Consistent name-and-relationship text
+                across a site is part of how search engines decide these are
+                one entity. */}
+            <p className="mt-3 max-w-sm text-xs leading-relaxed text-chalk-500">
+              {SITE.brand} is the online coaching brand of {SITE.business} (Autonomy Fitness)
+              {SITE.coach?.name ? (
+                <>
+                  , founded and coached by{' '}
+                  <Link to="/about" className="text-chalk-400 underline-offset-2 hover:underline">
+                    {SITE.coach.name}
+                  </Link>
+                </>
+              ) : null}
+              .
             </p>
             <div className="mt-6 flex items-center gap-3">
               <a
@@ -61,7 +109,7 @@ export function Footer() {
           </div>
 
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
-            {COLUMNS.map((column) => (
+            {columns.map((column) => (
               <div key={column.title}>
                 <h2 className="mb-4 font-display text-xs font-semibold uppercase tracking-[0.2em] text-white">
                   {column.title}

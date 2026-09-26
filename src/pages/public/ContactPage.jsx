@@ -10,7 +10,7 @@ import { Section, SectionHeading } from '@/components/ui/Section'
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input, Select, Textarea } from '@/components/ui/Field'
-import { SITE } from '@/data/site'
+import { KEYWORDS, SITE } from '@/data/site'
 import { toast } from '@/components/ui/Toast'
 import { browserTimezone, useClientValue } from '@/lib/ssr'
 import { trackEvent } from '@/lib/analytics'
@@ -111,10 +111,11 @@ function BookingForm() {
 
 export default function ContactPage() {
   useSeo({
-    title: 'Contact Coach Auto',
+    title: 'Contact Coach Auto — Book a Free Consultation',
     description:
-      'Book a chat with Coach Auto or send a message. Online strength and nutrition coaching from Autonomy Health and Fitness.',
+      'Book a free consultation with Coach Auto (Autonomy Fitness) or message coach Lisha Chesson about online strength and nutrition coaching.',
     path: '/contact',
+    keywords: KEYWORDS.contact,
     jsonLd: breadcrumbSchema([
       { name: 'Home', path: '/' },
       { name: 'Contact', path: '/contact' },

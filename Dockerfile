@@ -25,12 +25,19 @@ ARG PRERENDER_API_URL=""
 # production. A Coolify build variable of the same name overrides them.
 ARG GOOGLE_SITE_VERIFICATION="yzfBRXGUdhJo-UZqTEEr5W88h-e8GaG8sSiQinKeQFQ"
 ARG BING_SITE_VERIFICATION="90AA4FE054A497DE4F16DA9732958233"
+# Official profiles of the business / coach, comma-separated full https URLs
+# (YouTube, Facebook, LinkedIn, TikTok, a directory listing…). Written into
+# the Organization and Person structured data as `sameAs` — the strongest
+# "same entity" signal for Google's Knowledge Graph and AI assistants. Only
+# list profiles that link back to the site. Set it as a Coolify build variable.
+ARG VITE_SAME_AS=""
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_SITE_URL=$VITE_SITE_URL \
     VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID \
     PRERENDER_API_URL=$PRERENDER_API_URL \
     GOOGLE_SITE_VERIFICATION=$GOOGLE_SITE_VERIFICATION \
-    BING_SITE_VERIFICATION=$BING_SITE_VERIFICATION
+    BING_SITE_VERIFICATION=$BING_SITE_VERIFICATION \
+    VITE_SAME_AS=$VITE_SAME_AS
 # Client build, server build, then prerender + robots.txt/sitemap/llms.txt.
 RUN npm run build
 

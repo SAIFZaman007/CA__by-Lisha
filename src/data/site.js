@@ -1,28 +1,76 @@
 /** Brand constants used across the marketing pages. */
 
+const SAME_AS = String(import.meta.env.VITE_SAME_AS ?? '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter((value) => /^https:\/\/\S+$/.test(value))
+
 export const SITE = {
   brand: 'Coach Auto',
   business: 'Autonomy Health and Fitness',
-  // Every name people actually search for. Used in structured data
-  // (`alternateName`) and llms.txt so search engines and AI assistants
-  // connect all of them to this one site.
-  alternateNames: ['Autonomy Fitness', 'Autonomy Health and Fitness', 'Coach Auto Fitness'],
+
+  alternateNames: [
+    'Autonomy Fitness',
+    'Autonomy Health and Fitness',
+    'Autonomy Health & Fitness',
+    'Coach Auto Fitness',
+    'Coach Auto by Lisha Chesson',
+  ],
   tagline: 'Train · Build · Transform',
+  slogan: 'Built on discipline. Delivered with results.',
   description:
-    'Coach Auto (Autonomy Health and Fitness) is an online strength, bodybuilding and nutrition coaching service. Certified coach Lisha Chesson writes personalised training programmes and meal plans and reviews every client’s progress weekly — beginner to advanced, worldwide.',
-  defaultTitle: 'Coach Auto — Autonomy Health & Fitness | Online Strength Coaching',
+    'Coach Auto (Autonomy Health and Fitness, also called Autonomy Fitness) is an online strength, bodybuilding and nutrition coaching service run by certified coach Lisha Chesson. Personalised training programmes, meal plans and weekly progress reviews — beginner to advanced, worldwide.',
+  // The home page title. Leads with the two brand names people type, then
+  // the coach, inside ~60 characters so Google does not truncate it.
+  defaultTitle: 'Coach Auto — Autonomy Fitness | Online Coaching by Lisha Chesson',
   email: 'coachauto2026@gmail.com',
   // The coach behind the brand, shown on the About page and in Person
   // structured data so a search for her name finds this site. Set `name` to
   // '' to keep her name off the site entirely.
   coach: {
     name: 'Lisha Chesson',
+    // She trades publicly as "Coach Auto"; the alias ties the two together.
+    alternateName: 'Coach Auto',
     jobTitle: 'Certified Strength & Bodybuilding Coach',
+    description:
+      'Lisha Chesson is a certified strength and bodybuilding coach and the founder of Coach Auto (Autonomy Health and Fitness), coaching clients online with personalised training programmes, meal plans and weekly progress reviews.',
+    credential: 'CPD-accredited Strength & Bodybuilding Coach certification',
+    image: '/images/hero-portrait.png',
   },
-  // Official profiles only (Google Business Profile, YouTube, LinkedIn…).
-  // Each one is a strong "this is the same entity" signal for Google and AI.
-  sameAs: [],
+  sameAs: SAME_AS,
   url: (import.meta.env.VITE_SITE_URL || 'https://autonomyfitness.press').replace(/\/$/, ''),
+}
+
+/**
+ * The searches each public page is written to answer. Google ignores the
+ * keywords meta tag for ranking; these exist so titles, headings and copy on
+ * each page stay aimed at one cluster instead of all pages competing for the
+ * same words. Bing still reads the tag as a weak hint.
+ */
+export const KEYWORDS = {
+  home: [
+    'Coach Auto',
+    'Autonomy Fitness',
+    'Autonomy Health and Fitness',
+    'Lisha Chesson',
+    'online strength coaching',
+    'online fitness coach',
+  ],
+  about: [
+    'Lisha Chesson',
+    'Lisha Chesson coach',
+    'Coach Auto',
+    'female strength coach',
+    'certified bodybuilding coach',
+  ],
+  programs: [
+    'online strength training programme',
+    'online personal training with meal plan',
+    'beginner strength coaching',
+    'bodybuilding coaching online',
+    'Coach Auto programmes',
+  ],
+  contact: ['contact Coach Auto', 'free fitness consultation', 'online coach consultation'],
 }
 
 export const STATS = [

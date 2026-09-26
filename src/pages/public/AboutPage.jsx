@@ -1,13 +1,13 @@
 import { Award, HeartPulse, ShieldCheck, Users } from 'lucide-react'
 
 import { useSeo } from '@/lib/seo'
-import { breadcrumbSchema, organizationSchema, personSchema } from '@/lib/structuredData'
+import { breadcrumbSchema, profilePageSchema } from '@/lib/structuredData'
 import { useState } from 'react'
 import { Section, SectionHeading, motion, fadeUp, inViewProps, stagger } from '@/components/ui/Section'
 import { Card, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Picture } from '@/components/ui/Picture'
-import { SITE, PROCESS } from '@/data/site'
+import { KEYWORDS, SITE, PROCESS } from '@/data/site'
 
 const VALUES = [
   {
@@ -35,17 +35,23 @@ const VALUES = [
 export default function AboutPage() {
   const [reveal] = useState(inViewProps)
   useSeo({
-    title: SITE.coach?.name ? `About ${SITE.coach.name}, Online Strength Coach` : 'About Coach Auto',
+    title: SITE.coach?.name
+      ? `${SITE.coach.name} — Online Strength & Bodybuilding Coach`
+      : 'About Coach Auto',
     description:
-      'Coach Auto is the online strength coaching arm of Autonomy Health and Fitness, run by certified coach Lisha Chesson — bodybuilding and nutrition coaching for beginners to advanced athletes.',
+      'Meet Lisha Chesson, the certified strength and bodybuilding coach behind Coach Auto (Autonomy Health and Fitness), coaching clients online worldwide.',
     path: '/about',
+    type: 'profile',
+    keywords: KEYWORDS.about,
+    // Organization/WebSite/Person arrive with every page (lib/seo.js); this
+    // page adds that it IS her profile, which is what Google's ProfilePage
+    // type exists to say.
     jsonLd: [
       breadcrumbSchema([
         { name: 'Home', path: '/' },
         { name: 'About', path: '/about' },
       ]),
-      organizationSchema(),
-      personSchema(),
+      profilePageSchema(),
     ].filter(Boolean),
   })
 
@@ -55,23 +61,38 @@ export default function AboutPage() {
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           <div>
             <motion.p variants={fadeUp} className="eyebrow mb-3">
-              About
+              About {SITE.brand} · {SITE.alternateNames[0]}
             </motion.p>
+            {/* Her name is the heading: this is the page a search for
+                "Lisha Chesson" should land on, and the <h1> is where a search
+                engine looks first to decide what a page is about. */}
             <motion.h1 variants={fadeUp} className="text-4xl sm:text-6xl">
-              Coaching built from{' '}
-              <span className="text-brand-500">the inside out.</span>
+              {SITE.coach?.name ? (
+                <>
+                  Meet {SITE.coach.name}.{' '}
+                  <span className="text-brand-500">Coaching built from the inside out.</span>
+                </>
+              ) : (
+                <>
+                  Coaching built from{' '}
+                  <span className="text-brand-500">the inside out.</span>
+                </>
+              )}
             </motion.h1>
             <motion.div variants={fadeUp} className="mt-6 space-y-4 text-chalk-400">
               <p className="text-lg leading-relaxed">
-                Coach Auto is the online coaching arm of {SITE.business}. It exists for people
+                Coach Auto is the online coaching arm of {SITE.business} — known to many
+                simply as Autonomy Fitness. It exists for people
                 who want to get strong properly — with a program written for them, food they can
                 actually stick to, and someone reading their progress every week.
               </p>
               {SITE.coach?.name && (
                 <p className="leading-relaxed">
-                  Coach Auto is run by <strong className="text-chalk-100">{SITE.coach.name}</strong>,
-                  a {SITE.coach.jobTitle.toLowerCase()}. She writes every programme and meal plan
-                  herself and reads every client check-in.
+                  Coach Auto is founded and run by{' '}
+                  <strong className="text-chalk-100">{SITE.coach.name}</strong>, a{' '}
+                  {SITE.coach.jobTitle.toLowerCase()}. She writes every programme and meal plan
+                  herself and reads every client check-in — the coach you message is the coach
+                  who wrote your plan.
                 </p>
               )}
               <p className="leading-relaxed">

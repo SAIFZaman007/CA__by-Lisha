@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { SITE } from '@/data/site'
 import { trackPageView } from '@/lib/analytics'
+import { siteGraph } from '@/lib/structuredData'
 
 const BASE_URL = SITE.url
 const DEFAULT_IMAGE = `${BASE_URL}/images/og-cover.jpg`
@@ -67,7 +68,14 @@ export function buildSeo({
       'twitter:description': summary ?? '',
       'twitter:image': socialImage,
     },
-    jsonLd: jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [],
+    // Every indexable page carries the site-wide entity graph (Organization,
+    // WebSite, Person) first, then its own blocks. It used to be hard-coded
+    // in index.html — a second copy that had already drifted from the one
+    // here. Now there is one source, and noindex pages carry none of it.
+    jsonLd: [
+      ...(noIndex ? [] : [siteGraph()]),
+      ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : []),
+    ],
   }
 }
 

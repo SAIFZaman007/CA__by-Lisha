@@ -8,6 +8,7 @@ import { CtaForm } from '@/components/sections/CtaForm'
 import { api } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
 import { useSeo } from '@/lib/seo'
+import { KEYWORDS } from '@/data/site'
 import { breadcrumbSchema } from '@/lib/structuredData'
 
 /** Cents to a whole-dollar string, without throwing on a null price. */
@@ -18,10 +19,11 @@ function price(cents) {
 
 export default function ProgramsPage() {
   useSeo({
-    title: 'Coaching Programmes — Beginner to Advanced',
+    title: 'Online Strength Coaching Programmes — Level 1 to 3',
     description:
-      'Three online strength coaching levels: Level 1 trains three days a week, Level 2 four days, Level 3 five to six. Each includes a meal plan, exercise videos and weekly coach reviews.',
+      'Coach Auto online coaching: Level 1 trains 3 days a week, Level 2 four, Level 3 five to six. Each includes a meal plan, exercise videos and weekly reviews.',
     path: '/programs',
+    keywords: KEYWORDS.programs,
     jsonLd: breadcrumbSchema([
       { name: 'Home', path: '/' },
       { name: 'Programmes', path: '/programs' },
