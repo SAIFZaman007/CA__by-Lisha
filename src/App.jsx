@@ -13,6 +13,7 @@ import { clearChunkReloadFlag, lazyWithRetry } from '@/lib/lazyWithRetry'
 import Home from '@/pages/public/Home'
 import { markClientNavigation } from '@/lib/ssr'
 import { trackPageView } from '@/lib/analytics'
+import { postAuthPath } from '@/lib/purchase'
 
 // Lazy-loaded routes.
 const ProgramsPage = lazyWithRetry(() => import('@/pages/public/ProgramsPage'))
@@ -107,8 +108,11 @@ function RequireAuth({ children }) {
 
 function RedirectIfSignedIn({ children }) {
   const status = useAuth((s) => s.status)
+  const { search } = useLocation()
   if (status === 'loading') return <FullPageSpinner />
-  if (status === 'authenticated') return <Navigate to="/portal" replace />
+  // `/register?plan=…` (from "Purchase now") continues to billing; any other
+  // signed-in visitor goes to the dashboard as before.
+  if (status === 'authenticated') return <Navigate to={postAuthPath(search)} replace />
   return children
 }
 

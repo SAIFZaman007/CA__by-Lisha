@@ -97,31 +97,35 @@ export default function CheckoutSuccess() {
         // A paid plan now comes with an automatically generated meal plan.
         queryClient.invalidateQueries({ queryKey: ['nutrition'] })
 
+        let data = null
         try {
-          const data = await api.billing.entitlement()
+          data = await api.billing.entitlement()
           if (!cancelled) setEntitlement(data)
-          // Once per Stripe session (a reload of this page is not a second sale).
-          const sub = data?.subscription
-          const key = `ca:purchase-tracked:${sessionId}`
-          let seen = false
-          try {
-            seen = sessionStorage.getItem(key) === '1'
-            sessionStorage.setItem(key, '1')
-          } catch {
-            /* private mode: track anyway */
-          }
-          if (!seen) {
-            trackEvent('purchase', {
-              transaction_id: sessionId,
-              currency: (sub?.currency || 'usd').toUpperCase(),
-              value: (sub?.price_cents ?? 0) / 100,
-              items: data?.program
-                ? [{ item_id: data.program.slug, item_name: data.program.name }]
-                : undefined,
-            })
-          }
         } catch {
           /* the CTA below still works without the summary card */
+        }
+
+        // The sale is reported even when that lookup failed — the payment is
+        // confirmed above, and the amount is simply left out if it is unknown.
+        // Once per Stripe session (a reload of this page is not a second sale).
+        const sub = data?.subscription
+        const key = `ca:purchase-tracked:${sessionId}`
+        let seen = false
+        try {
+          seen = sessionStorage.getItem(key) === '1'
+          sessionStorage.setItem(key, '1')
+        } catch {
+          /* private mode: track anyway */
+        }
+        if (!seen) {
+          trackEvent('purchase', {
+            transaction_id: sessionId,
+            currency: (sub?.currency || 'usd').toUpperCase(),
+            value: (sub?.price_cents ?? 0) / 100,
+            items: data?.program
+              ? [{ item_id: data.program.slug, item_name: data.program.name }]
+              : undefined,
+          })
         }
       } catch (err) {
         if (cancelled) return

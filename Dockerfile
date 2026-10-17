@@ -12,6 +12,14 @@ ARG VITE_API_URL=""
 ARG VITE_SITE_URL="https://autonomyfitness.press"
 # Google Analytics 4 measurement id (public, not a secret). Blank disables GA.
 ARG VITE_GA_MEASUREMENT_ID="G-QW8S3X6Q6V"
+# Google Ads conversion tracking (public ids, not secrets). Leave VITE_GOOGLE_ADS_ID
+# blank to keep Ads tracking off. Copy the values from Google Ads → Goals →
+# Conversions → <action> → Tag setup → Event snippet, where send_to reads
+# 'AW-123456789/<label>': the id is the AW- part, the label is what follows the
+# slash. The sign-up label is optional.
+ARG VITE_GOOGLE_ADS_ID=""
+ARG VITE_GOOGLE_ADS_PURCHASE_LABEL=""
+ARG VITE_GOOGLE_ADS_SIGNUP_LABEL=""
 # Where the build reads programmes/testimonials/gallery from to prerender the
 # public pages (scripts/prerender.mjs). Empty = <VITE_SITE_URL>/api/v1, the
 # live API. If it is unreachable (e.g. the very first deploy) the build still
@@ -34,6 +42,9 @@ ARG VITE_SAME_AS=""
 ENV VITE_API_URL=$VITE_API_URL \
     VITE_SITE_URL=$VITE_SITE_URL \
     VITE_GA_MEASUREMENT_ID=$VITE_GA_MEASUREMENT_ID \
+    VITE_GOOGLE_ADS_ID=$VITE_GOOGLE_ADS_ID \
+    VITE_GOOGLE_ADS_PURCHASE_LABEL=$VITE_GOOGLE_ADS_PURCHASE_LABEL \
+    VITE_GOOGLE_ADS_SIGNUP_LABEL=$VITE_GOOGLE_ADS_SIGNUP_LABEL \
     PRERENDER_API_URL=$PRERENDER_API_URL \
     GOOGLE_SITE_VERIFICATION=$GOOGLE_SITE_VERIFICATION \
     BING_SITE_VERIFICATION=$BING_SITE_VERIFICATION \

@@ -10,6 +10,7 @@ import { useAuth } from '@/store/auth'
 import { toast } from '@/components/ui/Toast'
 import { useSeo } from '@/lib/seo'
 import { trackEvent } from '@/lib/analytics'
+import { signupPath } from '@/lib/purchase'
 import { breadcrumbSchema, programSchema } from '@/lib/structuredData'
 
 function price(cents) {
@@ -42,9 +43,11 @@ export default function ProgramDetail() {
     onError: (failure) => toast.error(errorMessage(failure, 'Could not start checkout.')),
   })
 
-  function handleSubscribeClick() {
+  function handlePurchaseClick() {
+    // No account yet: sign up first (the chosen plan travels with the visitor),
+    // then pay from the billing page of the new dashboard.
     if (authStatus !== 'authenticated') {
-      navigate('/login', { state: { from: `/programs/${slug}` } })
+      navigate(signupPath(program.slug))
       return
     }
     trackEvent('begin_checkout', {
@@ -161,19 +164,23 @@ export default function ProgramDetail() {
                 </div>
               )}
             </dl>
-            <Button to="/contact" fullWidth size="lg" className="mt-7">
-              Apply for this level
-            </Button>
-            <Button
-              onClick={handleSubscribeClick}
-              loading={subscribe.isPending}
-              variant="outline"
-              fullWidth
-              size="lg"
-              className="mt-3"
-            >
-              Subscribe now
-            </Button>
+            {/* A level that is full cannot be bought (the API answers 409), so it
+                keeps a route to the coach instead of a dead-end sign-up. */}
+            {program.is_accepting_clients === false ? (
+              <Button to="/contact" fullWidth size="lg" className="mt-7">
+                Join the waitlist
+              </Button>
+            ) : (
+              <Button
+                onClick={handlePurchaseClick}
+                loading={subscribe.isPending}
+                fullWidth
+                size="lg"
+                className="mt-7"
+              >
+                Purchase now
+              </Button>
+            )}
           </aside>
         </div>
       </motion.div>

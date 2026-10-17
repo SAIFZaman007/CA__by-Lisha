@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { ArrowRight, Check, TriangleAlert } from 'lucide-react'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
 import { Button } from '@/components/ui/Button'
@@ -114,17 +113,11 @@ export default function ProgramsPage() {
                   ))}
                 </ul>
 
-                <div className="mt-7 space-y-3">
-                  <Button to="/contact" fullWidth>
-                    Apply now
-                  </Button>
-                  <Link
-                    to={`/programs/${program.slug}`}
-                    className="flex items-center justify-center gap-1.5 text-xs font-medium text-chalk-400 transition-colors hover:text-brand-500"
-                  >
+                <div className="mt-7">
+                  <Button to={`/programs/${program.slug}`} fullWidth>
                     Full programme detail
-                    <ArrowRight className="size-3" aria-hidden="true" />
-                  </Link>
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Button>
                 </div>
               </motion.article>
             ))}

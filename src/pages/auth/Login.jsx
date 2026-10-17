@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Field'
 import { useAuth } from '@/store/auth'
 import { errorMessage } from '@/lib/api'
+import { postAuthPath } from '@/lib/purchase'
 
 export default function Login() {
   const login = useAuth((s) => s.login)
@@ -24,7 +25,7 @@ export default function Login() {
     setFormError(null)
     try {
       await login({ email: values.email.trim(), password: values.password })
-      navigate(location.state?.from ?? '/portal', { replace: true })
+      navigate(location.state?.from ?? postAuthPath(location.search), { replace: true })
     } catch (error) {
       setFormError(errorMessage(error, 'That email and password do not match.'))
     }

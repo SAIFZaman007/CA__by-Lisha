@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/Card'
 import { Figure } from '@/components/ui/Figure'
 import { api } from '@/lib/api'
 import { keys } from '@/lib/queryClient'
+import { signupPath } from '@/lib/purchase'
 import { cn } from '@/lib/utils'
 
 
@@ -115,10 +116,19 @@ export function Programs() {
                 <span className="font-display text-3xl font-bold text-brand-500">${price}</span>
                 <span className="ml-1.5 text-sm text-chalk-500">/ {program.billing_period}</span>
               </p>
-              <Button to="/contact">
-                Apply for this level
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Button>
+              {/* A level that is full cannot be bought (the API answers 409), so
+                  it keeps a route to the coach instead of a dead-end sign-up. */}
+              {program.is_accepting_clients === false ? (
+                <Button to="/contact">
+                  Join the waitlist
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Button>
+              ) : (
+                <Button to={signupPath(program.slug)}>
+                  Purchase now
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Button>
+              )}
             </div>
           </div>
 

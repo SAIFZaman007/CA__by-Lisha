@@ -46,10 +46,15 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
     add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
 
-    # Google Analytics 4 (src/lib/analytics.js): gtag.js from
-    # www.googletagmanager.com, hits to *.google-analytics.com /
-    # *.analytics.google.com — Google's documented CSP for GA4. No inline
-    # script is allowed: the gtag() queue lives in a same-origin module.
+    # Google Analytics 4 + Google Ads conversion tracking (src/lib/analytics.js):
+    # gtag.js from www.googletagmanager.com, GA4 hits to *.google-analytics.com /
+    # *.analytics.google.com, Ads conversion pings to www.googleadservices.com,
+    # googleads.g.doubleclick.net and www.google.com — Google's documented CSP
+    # for the Google tag with Google Ads
+    # (developers.google.com/tag-platform/security/guides/csp). Without the Ads
+    # hosts the browser silently drops every conversion ping, and Google Ads
+    # keeps reporting the conversion as "Unverified". No inline script is
+    # allowed: the gtag() queue lives in a same-origin module.
     #
     # `img-src` keeps `blob:` because the message composer previews a picked
     # file with URL.createObjectURL before it is uploaded.
@@ -73,7 +78,7 @@ server {
     # the Dockerfile), so the media origin is configured once rather than baked
     # into an image. It must equal PUBLIC_API_URL on the backend. Empty is fine
     # and correct for a same-origin deployment — 'self' already covers it.
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://i.vimeocdn.com https://*.google-analytics.com https://*.googletagmanager.com ${API_ORIGIN}; media-src 'self' blob: https://res.cloudinary.com ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self' https://www.googletagmanager.com https://www.googleadservices.com https://www.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://res.cloudinary.com https://i.ytimg.com https://i.vimeocdn.com https://*.google-analytics.com https://*.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com ${API_ORIGIN}; media-src 'self' blob: https://res.cloudinary.com ${API_ORIGIN}; font-src 'self' data:; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://www.googleadservices.com https://googleads.g.doubleclick.net https://ad.doubleclick.net https://pagead2.googlesyndication.com https://www.google.com ${API_ORIGIN}; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://player.vimeo.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'" always;
 
     # Declare UTF-8 on every text response (robots.txt was rendering its em
     # dash as "â€”" because text/plain went out with no charset).

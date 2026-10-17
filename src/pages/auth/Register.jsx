@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { useForm } from 'react-hook-form'
 
 import { AuthLayout } from './AuthLayout'
@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/Field'
 import { useAuth } from '@/store/auth'
 import { errorMessage } from '@/lib/api'
 import { trackEvent } from '@/lib/analytics'
+import { planSearch, postAuthPath } from '@/lib/purchase'
 
 export default function Register() {
   const registerUser = useAuth((s) => s.register)
   const navigate = useNavigate()
+  const { search } = useLocation()
   const [formError, setFormError] = useState(null)
 
   const {
@@ -31,7 +33,8 @@ export default function Register() {
         accepts_terms: true,
       })
       trackEvent('sign_up', { method: 'email' })
-      navigate('/portal', { replace: true })
+      // "Purchase now" visitors continue to the billing page to pick and pay.
+      navigate(postAuthPath(search), { replace: true })
     } catch (error) {
       setFormError(errorMessage(error, 'We could not create that account.'))
     }
@@ -48,7 +51,6 @@ export default function Register() {
         <Input
           label="Full name"
           autoComplete="name"
-          placeholder="Sandra Thompson"
           error={errors.full_name?.message}
           {...register('full_name', {
             required: 'Enter your name.',
@@ -60,7 +62,6 @@ export default function Register() {
           label="Email address"
           type="email"
           autoComplete="email"
-          placeholder="you@email.com"
           error={errors.email?.message}
           {...register('email', { required: 'Enter your email address.' })}
         />
@@ -115,7 +116,7 @@ export default function Register() {
 
         <p className="text-center text-sm text-chalk-500">
           Already have an account?{' '}
-          <Link to="/login" className="font-medium text-brand-500 hover:underline">
+          <Link to={`/login${planSearch(search)}`} className="font-medium text-brand-500 hover:underline">
             Sign in →
           </Link>
         </p>

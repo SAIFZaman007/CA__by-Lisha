@@ -1,8 +1,9 @@
 import { useSeo } from '@/lib/seo'
 import { Section } from '@/components/ui/Section'
 import { SITE } from '@/data/site'
+import { adsTrackingConfigured } from '@/lib/analytics'
 
-const UPDATED = 'August 2026'
+const UPDATED = 'October 2026'
 
 /**
  * Privacy and terms. These are a starting draft written around how the
@@ -64,9 +65,18 @@ const DOCS = {
         heading: 'Cookies',
         body: [
           'One essential cookie keeps you signed in. It is HttpOnly, meaning scripts cannot read it, and it exists solely to maintain your session.',
-          'The public website uses Google Analytics 4 to count page visits and enquiries, so we know which pages help people. It is configured to collect no advertising data, no Google signals and no personal details; page addresses are sent without their query strings.',
-          'Visitors in the European Economic Area, the United Kingdom and Switzerland are measured without analytics cookies (Google Consent Mode, analytics storage denied by default).',
-          'You can opt out everywhere with the Google Analytics opt-out browser add-on, or by blocking cookies from google-analytics.com.',
+          ...(adsTrackingConfigured
+            ? [
+                'The public website uses Google Analytics 4 to count page visits and enquiries, so we know which pages help people. It is configured to collect no Google signals and no personal details; page addresses are sent without their query strings, other than campaign tags and Google Ads click identifiers.',
+                'If you arrive from a Google ad, Google Ads conversion measurement stores a first-party cookie that records the ad click, so we can tell whether the ad led to a sign-up or a purchase. It reports only that the conversion happened and its value — never your name, email address or health information — and it is not used to personalise ads or build remarketing audiences.',
+                'Visitors in the European Economic Area, the United Kingdom and Switzerland are measured without analytics or advertising cookies (Google Consent Mode, analytics and advertising storage denied by default).',
+                'You can opt out of analytics with the Google Analytics opt-out browser add-on, and of ad measurement in your Google Ads settings (adssettings.google.com) or by blocking cookies from google.com and googleadservices.com.',
+              ]
+            : [
+                'The public website uses Google Analytics 4 to count page visits and enquiries, so we know which pages help people. It is configured to collect no advertising data, no Google signals and no personal details; page addresses are sent without their query strings.',
+                'Visitors in the European Economic Area, the United Kingdom and Switzerland are measured without analytics cookies (Google Consent Mode, analytics storage denied by default).',
+                'You can opt out everywhere with the Google Analytics opt-out browser add-on, or by blocking cookies from google-analytics.com.',
+              ]),
         ],
       },
     ],
