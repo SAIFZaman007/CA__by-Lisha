@@ -143,7 +143,7 @@ export default function GalleryPage() {
         as="h1"
         eyebrow="Gallery"
         title={TITLE}
-        description="Transformations, sessions and the days that made them. Every photo here is someone's work."
+        description="Transformations, sessions and the days that made them."
       />
       {isPending ? (
         <div className="flex justify-center py-20">
