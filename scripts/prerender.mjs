@@ -25,7 +25,6 @@ const STATIC_ROUTES = [
 ]
 
 async function readEnvFile(key) {
-  // Vite reads .env.production for `vite build`; mirror that for this script.
   for (const file of ['.env.production.local', '.env.production', '.env.local', '.env']) {
     try {
       const text = await readFile(path.join(root, file), 'utf8')
@@ -57,11 +56,9 @@ const escapeHtml = (value) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
 
-// JSON inside <script>: neutralise "</script>" and HTML comment openers.
 const safeJson = (value) =>
   JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026')
 
-/** Replace the default SEO tags in the shell with this page's. */
 function applyHead(template, seo) {
   if (!seo) return template
   let html = template
@@ -80,28 +77,54 @@ function applyHead(template, seo) {
     ...Object.entries(seo.twitter).map(([k, v]) => `<meta name="${k}" content="${escapeHtml(v)}" />`),
     ...seo.jsonLd.map((data) => `<script type="application/ld+json" data-seo-ssr>${safeJson(data)}</script>`),
   ]
-  html = html.replace(/(<meta\s+name="viewport"[^>]*>)/i, `$1\n    ${tags.join('\n    ')}`)
+
+  html = html.replace(/(<meta\s+name="viewport"[^>]*>)/i, (viewport) => `${viewport}\n    ${tags.join('\n    ')}`)
   return html
+}
+
+function assertHeadIntact(page, seo) {
+  if (!seo) return
+  const problems = []
+  const headEnd = page.search(/<\/head>/i)
+  if (headEnd === -1) {
+    problems.push('there is no </head>')
+  } else {
+    const head = page.slice(0, headEnd)
+    const expected = {
+      title: `<title>${escapeHtml(seo.title)}</title>`,
+      description: `<meta name="description" content="${escapeHtml(seo.description)}" />`,
+      canonical: `<link rel="canonical" href="${escapeHtml(seo.canonical)}" />`,
+      robots: `<meta name="robots" content="${escapeHtml(seo.robots)}" />`,
+    }
+    for (const [name, tag] of Object.entries(expected)) {
+      const count = head.split(tag).length - 1
+      if (count !== 1) problems.push(`the ${name} tag appears ${count} times in <head> (expected 1)`)
+    }
+    const stray = head
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<(script|style|title)[\s\S]*?<\/\1>/gi, '')
+      .replace(/<[^>]*>/g, '')
+      .trim()
+    if (stray) problems.push(`stray text in <head>: "${stray.slice(0, 40)}"`)
+  }
+  if (/<link\s+rel="canonical"/i.test(page.slice(headEnd === -1 ? 0 : headEnd))) {
+    problems.push('the canonical link leaked into <body>')
+  }
+  if (problems.length) {
+    const error = new Error(`<head> is not intact:\n    - ${problems.join('\n    - ')}`)
+    error.fatal = true
+    throw error
+  }
 }
 
 function applyBody(template, appHtml, state) {
   const stateTag = `<script type="application/json" id="__RQ_STATE__">${safeJson(state)}</script>`
   return template
-    .replace('<div id="root"></div>', `<div id="root">${appHtml}</div>\n    ${stateTag}`)
+    .replace('<div id="root"></div>', () => `<div id="root">${appHtml}</div>\n    ${stateTag}`)
 }
 
-/**
- * Font preloads. The body and heading fonts swapping in after first paint
- * reflowed the text (the About page's CLS was 0.28). Preloading the Latin
- * subsets makes them arrive with the CSS, so the first paint already uses
- * them. Other subsets load on demand as before.
- */
 async function fontPreloads() {
   const files = await readdir(path.join(dist, 'assets'))
-  // Latin body (Inter) and heading (Barlow Condensed 700) faces only. Tested:
-  // without the Inter preload, the About page's text reflows on swap (CLS
-  // 0.22 on Linux/Android, where the metric-matched fallback fonts may be
-  // missing); with it, CLS is 0 on every page.
   const wanted = [/^inter-latin-wght-normal-.*\.woff2$/, /^barlow-condensed-latin-700-normal-.*\.woff2$/]
   return files
     .filter((file) => wanted.some((pattern) => pattern.test(file)))
@@ -109,17 +132,6 @@ async function fontPreloads() {
     .join('\n    ')
 }
 
-/**
- * Search-engine ownership tags (optional). Verifying through DNS in Search
- * Console / Bing Webmaster Tools is better — it covers every subdomain and
- * survives redesigns — but if you choose the "HTML tag" method, put the
- * content value in GOOGLE_SITE_VERIFICATION / BING_SITE_VERIFICATION and it
- * is written into every page's <head> at build time.
- */
-/**
- * Accept the token however it was pasted: the bare value, the DNS form
- * ("google-site-verification=abc…"), or the whole <meta … content="abc…"> tag.
- */
 function normaliseToken(raw, name) {
   let value = String(raw ?? '').trim()
   const fromTag = value.match(/content\s*=\s*["']([^"']+)["']/i)
@@ -147,18 +159,13 @@ async function verificationTags() {
 
 function withVerification(html, tags) {
   if (!tags || html.includes('google-site-verification') || html.includes('msvalidate.01')) return html
-  return html.replace(/(<meta\s+name="viewport"[^>]*>)/i, `$1\n    ${tags}`)
+  return html.replace(/(<meta\s+name="viewport"[^>]*>)/i, (viewport) => `${viewport}\n    ${tags}`)
 }
 
 function withPreloads(html, preloads) {
-  return preloads ? html.replace('</head>', `    ${preloads}\n  </head>`) : html
+  return preloads ? html.replace('</head>', () => `    ${preloads}\n  </head>`) : html
 }
 
-/**
- * Inline the stylesheet into prerendered pages: the page paints without
- * waiting for a second, render-blocking request (~0.75 s on a mobile
- * connection). The SPA shell keeps the cacheable external file.
- */
 async function inlineStylesheet(html) {
   const match = html.match(/<link rel="stylesheet"[^>]*href="(\/assets\/[^"]+\.css)"[^>]*>/)
   if (!match) return html
@@ -170,7 +177,6 @@ function outputFile(routePath) {
   return routePath === '/' ? path.join(dist, 'index.html') : path.join(dist, routePath.slice(1), 'index.html')
 }
 
-/** Readable text of a rendered page, for llms-full.txt. */
 function pageText(html) {
   return html
     .replace(/<(script|style|svg|noscript)[\s\S]*?<\/\1>/gi, ' ')
@@ -209,16 +215,6 @@ ${urls}
 `
 }
 
-/**
- * Fail the build rather than ship a sitemap a crawler cannot read.
- *
- * Search Console's "Sitemap could not be read" gives no detail and costs days
- * of guessing, so the checks that would have caught it run here, at build
- * time, where the failure is loud and local: a declaration on the very first
- * byte (no BOM, no leading blank line), one <loc> per route, every URL
- * absolute on this site, and no unescaped ampersand — the classic way a
- * generated sitemap stops being XML.
- */
 function assertValidSitemap(xml, expectedUrls) {
   const problems = []
 
@@ -240,12 +236,9 @@ function assertValidSitemap(xml, expectedUrls) {
     }
   }
 
-  // Ampersands must be entities; a raw one ends the document for a parser.
   const rawAmp = xml.replace(/&(amp|lt|gt|quot|apos|#\d+|#x[0-9a-fA-F]+);/g, '')
   if (rawAmp.includes('&')) problems.push('an unescaped "&" is present')
 
-  // Control characters are not legal XML and survive every copy-paste.
-  // eslint-disable-next-line no-control-regex
   if (/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(xml)) {
     problems.push('the file contains control characters')
   }
@@ -256,15 +249,13 @@ function assertValidSitemap(xml, expectedUrls) {
 }
 
 function robotsTxt() {
-  // Plain ASCII only: some crawlers (and browsers without a charset header)
-  // read robots.txt as Latin-1.
   return `# Coach Auto - Autonomy Health and Fitness
 # ${SITE_URL}
 #
 # Search engines and AI assistants are welcome on every public page.
 # Account screens and the client portal hold personal data and are excluded.
 # /api/ is deliberately NOT disallowed: crawlers that render JavaScript need it
-# to build the programme and gallery pages. API responses send
+# to build the program and gallery pages. API responses send
 # "X-Robots-Tag: noindex", so they never appear in results themselves.
 
 User-agent: *
@@ -289,22 +280,22 @@ function llmsTxt(programs) {
           return `- [${p.name}](${SITE_URL}/programs/${p.slug})${price}${summary ? `: ${summary}` : ''}`
         })
         .join('\n')
-    : `- [All coaching programmes](${SITE_URL}/programs): Level 1 (beginner, 3 days a week), Level 2 (intermediate, 4 days), Level 3 (advanced, 5–6 days)`
+    : `- [All coaching programs](${SITE_URL}/programs): Level 1 (beginner, 3 days a week), Level 2 (intermediate, 4 days), Level 3 (advanced, 5–6 days)`
 
   return `# Coach Auto — Autonomy Health and Fitness
 
-> Coach Auto (Autonomy Health and Fitness, also known as Autonomy Fitness) is an online strength, bodybuilding and nutrition coaching service run by certified coach Lisha Chesson. Clients get a personalised training programme, a meal plan with macro targets, an exercise video library, weekly check-ins and direct messaging with the coach, all in one client portal. Coaching is delivered online, worldwide, for beginners through advanced lifters.
+> Coach Auto (Autonomy Health and Fitness, also known as Autonomy Fitness) is an online strength, bodybuilding and nutrition coaching service run by certified coach Lisha Chesson. Clients get a personalised training program, a meal plan with macro targets, an exercise video library, weekly check-ins and direct messaging with the coach, all in one client portal. Coaching is delivered online, worldwide, for beginners through advanced lifters.
 
 Key facts:
 
 - Website: ${SITE_URL}
 - Coach: Lisha Chesson, certified strength and bodybuilding coach
-- Format: 100% online coaching; programmes are written by hand, not generated
+- Format: 100% online coaching; programs are written by hand, not generated
 - Levels: Level 1 beginner (3 training days a week), Level 2 intermediate (4 days), Level 3 advanced (5–6 days)
-- Included: personalised programme, meal plan and macros, exercise videos, weekly progress reviews, sleep and cardio tracking, coach messaging
+- Included: personalised program, meal plan and macros, exercise videos, weekly progress reviews, sleep and cardio tracking, coach messaging
 - Contact: coachauto2026@gmail.com, or the enquiry form at ${SITE_URL}/contact
 
-## Coaching programmes
+## Coaching programs
 
 ${programLines}
 
@@ -312,7 +303,7 @@ ${programLines}
 
 - [Home](${SITE_URL}/): What Coach Auto offers and how online coaching works
 - [About](${SITE_URL}/about): The coach, the coaching philosophy and the assessment process
-- [Programmes](${SITE_URL}/programs): Compare Level 1, 2 and 3 coaching and prices
+- [Programs](${SITE_URL}/programs): Compare Level 1, 2 and 3 coaching and prices
 - [Free fitness calculators](${SITE_URL}/tools): Calorie, macro and BMI calculators
 - [Gallery](${SITE_URL}/gallery): Training, results and coaching photos
 - [Contact](${SITE_URL}/contact): Book a free consultation call
@@ -327,13 +318,10 @@ ${programLines}
 
 async function main() {
   const preloads = await fontPreloads()
-  // Re-running this script on an already-prerendered dist/ starts from the
-  // saved shell rather than from a prerendered home page.
   let shell = await readFile(path.join(dist, 'index.html'), 'utf8')
   if (shell.includes('id="__RQ_STATE__"')) shell = await readFile(path.join(dist, 'app.html'), 'utf8')
   const withFonts = shell.includes('as="font"') ? shell : withPreloads(shell, preloads)
   const template = withVerification(withFonts, await verificationTags())
-  // The shell, for routes that are not prerendered (portal, auth, 404).
   await writeFile(path.join(dist, 'app.html'), template)
   const pageTemplate = await inlineStylesheet(template)
 
@@ -342,7 +330,7 @@ async function main() {
     const data = await fetchJson(`${API_URL}/programs`)
     programs = Array.isArray(data) ? data : (data?.items ?? [])
   } catch (error) {
-    console.warn(`[prerender] Programmes not loaded from ${API_URL} (${error.message}). Programme detail pages are skipped.`)
+    console.warn(`[prerender] Programs not loaded from ${API_URL} (${error.message}). Program detail pages are skipped.`)
   }
 
   const routes = [
@@ -364,13 +352,14 @@ async function main() {
           console.warn(`[prerender] ${route.path}: rendered without ${failedQueries.join(', ')}`)
         }
         const page = applyBody(applyHead(pageTemplate, seo), html, state)
+        assertHeadIntact(page, seo)
         const file = outputFile(route.path)
         await mkdir(path.dirname(file), { recursive: true })
         await writeFile(file, page)
         fullText.push(`# ${seo?.title ?? route.path}\n\nURL: ${SITE_URL}${route.path}\n\n${pageText(html)}`)
         console.log(`[prerender] ${route.path} → ${path.relative(root, file)} (${(page.length / 1024).toFixed(0)} KB)`)
       } catch (error) {
-        // A page that cannot be prerendered still works as a client-rendered page.
+        if (error.fatal) throw new Error(`[prerender] ${route.path}: ${error.message}`, { cause: error })
         console.warn(`[prerender] ${route.path}: skipped (${error.message})`)
       }
     }

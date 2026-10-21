@@ -14,11 +14,8 @@ import { FAQS, KEYWORDS } from '@/data/site'
 
 export default function Home() {
   useSeo({
-    // No per-page title: the home page uses SITE.defaultTitle, which carries
-    // every name people search for — Coach Auto, Autonomy Fitness and the
-    // coach, Lisha Chesson.
     description:
-      'Coach Auto (Autonomy Fitness): online strength and nutrition coaching by certified coach Lisha Chesson. Custom programmes, meal plans and weekly reviews.',
+      'Coach Auto (Autonomy Fitness): online strength and nutrition coaching by certified coach Lisha Chesson. Custom programs, meal plans and weekly reviews.',
     path: '/',
     keywords: KEYWORDS.home,
     jsonLd: faqSchema(FAQS),

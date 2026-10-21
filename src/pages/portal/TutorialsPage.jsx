@@ -8,12 +8,6 @@ import { cn } from '@/lib/utils'
 import { PageHeading } from '@/components/portal/PortalLayout'
 import { Card, EmptyState, Skeleton } from '@/components/ui/Card'
 
-/**
- * Video Tutorials — the library the coach records so a client never has to guess
- * at form. Recordings are hosted on YouTube or Vimeo and embedded here; nothing
- * is uploaded to or served from our own infrastructure.
- */
-
 const CATEGORY_LABELS = {
   getting_started: 'Getting started',
   form_technique: 'Form & technique',
@@ -27,7 +21,6 @@ const CATEGORY_LABELS = {
 
 const LEVEL_LABELS = { level_1: 'Level 1', level_2: 'Level 2', level_3: 'Level 3' }
 
-/** Turn a pasted watch/share link into something an iframe will actually play. */
 export function embedUrl(tutorial) {
   const { provider, video_url: url } = tutorial
   if (provider === 'youtube') {
@@ -124,25 +117,6 @@ function PlayerDialog({ tutorial, onClose }) {
   const dialogRef = useRef(null)
   const videoRef = useRef(null)
   const src = tutorial ? embedUrl(tutorial) : null
-
-  // The signed URL on a direct-upload video is long-lived (an hour — see
-  // `MEDIA_VIDEO_URL_TTL_SECONDS` on the backend) but it is still minted once,
-  // at the moment the tutorial list loaded, and a <video> tag has no way to
-  // ask for a new one on its own. Someone who leaves a clip paused past that
-  // hour, or scrubs back into it after stepping away, will hit a real
-  // expired-link 401 on the next range request — not a bug so much as the
-  // unavoidable shape of "media elements cannot send an Authorization
-  // header." Rather than let that show up as a dead player with no way
-  // forward, one retry: fetch this tutorial again (which mints a fresh URL)
-  // and swap it in. If the retry itself fails, the person sees the normal
-  // error state and can just reopen the clip.
-  //
-  // `videoUrl` and `retriedRef` both start fresh from `tutorial` on every
-  // mount rather than syncing via an effect — the parent renders this
-  // component with `key={playing?.id}` (see the call site below), so a
-  // different tutorial is a full remount, and `useState`'s initial value runs
-  // exactly once per mount by definition. No effect needed to keep the two in
-  // step; there is only ever one `tutorial` this instance will ever see.
   const [videoUrl, setVideoUrl] = useState(tutorial?.video_url ?? null)
   const [refreshing, setRefreshing] = useState(false)
   const retriedRef = useRef(false)
@@ -155,14 +129,11 @@ function PlayerDialog({ tutorial, onClose }) {
       const fresh = await api.tutorials.get(tutorial.id)
       const resumeAt = videoRef.current?.currentTime ?? 0
       setVideoUrl(fresh.video_url)
-      // Wait for the new src to actually mount before seeking — setting
-      // currentTime on the old, now-unmounted element does nothing.
       requestAnimationFrame(() => {
         if (videoRef.current) videoRef.current.currentTime = resumeAt
       })
     } catch {
-      // Genuinely gone (deleted, unpublished) — leave the browser's own
-      // "can't play" state showing rather than retrying forever.
+
     } finally {
       setRefreshing(false)
     }
@@ -336,7 +307,7 @@ export default function TutorialsPage() {
 
       <p className="-mt-2 mb-5 max-w-2xl text-sm text-chalk-400">
         Watch the movement before you load the bar. Every clip is recorded by your coach and
-        matched to the exercises in your programme.
+        matched to the exercises in your program.
       </p>
 
       {filters?.categories?.length > 0 && (

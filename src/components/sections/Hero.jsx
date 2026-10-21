@@ -4,31 +4,6 @@ import { Picture } from '@/components/ui/Picture'
 import { Container } from '@/components/ui/Section'
 import { SITE, STATS } from '@/data/site'
 
-/**
- * Split editorial hero.
- *
- * The previous version stretched a 720×976 phone photo across the full viewport.
- * At 1920px wide that is a ~0.7MP image covering 2MP of screen, upscaled and
- * cropped to a slice — which is what made it read as amateur no matter how the
- * gradients were tuned.
- *
- * This layout works with the photography instead of against it: the portrait is
- * shown at its native 4:5 in a framed card at the size it can actually support,
- * from the highest-resolution source available (1570×2160). A heavily blurred
- * copy provides the ambient backdrop, where low resolution costs nothing because
- * it is out of focus by design. The result is a composition that looks
- * deliberate rather than an image that has been forced.
- *
- * Performance (PageSpeed mobile was 60):
- * - No animation library here. The hero is the first paint and the Largest
- *   Contentful Paint; it now animates with CSS only (`.hero-rise`), and only
- *   `transform` — never starting from `opacity: 0`, which is what used to push
- *   LCP back until the JavaScript animation had finished.
- * - The portrait is a responsive AVIF/WebP `<picture>` (≈35–80 KB on a phone)
- *   instead of a 2.6 MB PNG, and is preloaded from index.html.
- */
-// The coach's name if the site shows it (SITE.coach.name may be blanked to
-// keep it off the site), otherwise the brand.
 const COACH_NAME = SITE.coach?.name || SITE.brand
 
 export function Hero() {
@@ -47,7 +22,6 @@ export function Hero() {
         <div className="absolute inset-0 bg-ink-950/70" />
         <div className="absolute inset-0 bg-linear-to-b from-ink-950/90 via-transparent to-ink-900" />
         <div className="bg-grid absolute inset-0 opacity-60" />
-        {/* Red bloom anchored behind the portrait, tying the photo to the brand. */}
         <div className="bloom-brand absolute top-1/4 -right-24 hidden size-130 rounded-full blur-2xl lg:block" />
       </div>
 
@@ -55,11 +29,6 @@ export function Hero() {
         <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
           {/* --- Copy ------------------------------------------------------ */}
           <div>
-            {/* The brand names live INSIDE the <h1>. The page's main heading is
-                one of the strongest relevance signals a search engine reads,
-                and the slogan alone ("Built on discipline…") told Google
-                nothing about who this is. Same visual as the old eyebrow line —
-                only the semantics changed. */}
             <h1 className="text-balance text-5xl leading-[0.92] sm:text-6xl xl:text-7xl">
               <span className="hero-rise mb-6 flex items-center gap-3 leading-normal">
                 <span className="h-0.5 w-10 shrink-0 bg-brand-500" aria-hidden="true" />
@@ -91,7 +60,7 @@ export function Hero() {
             <p className="mt-7 max-w-xl text-base leading-relaxed text-chalk-200 sm:text-lg">
               Online strength and bodybuilding coaching from certified coach{' '}
               <strong className="font-semibold text-white">{COACH_NAME}</strong>, for lifters at
-              every level. A programme written for you, a meal plan that fits your week, and a
+              every level. A program written for you, a meal plan that fits your week, and a
               coach reading your numbers every single week.
             </p>
 
@@ -101,7 +70,7 @@ export function Hero() {
                 <ArrowRight className="size-4" aria-hidden="true" />
               </Button>
               <Button to="/programs" variant="outline" size="lg">
-                See the programmes
+                See the programs
               </Button>
             </div>
 
@@ -125,9 +94,7 @@ export function Hero() {
                 alt={`${COACH_NAME}, strength coach and founder of ${SITE.brand}, training in her gym`}
                 sizes="(min-width: 1024px) 40vw, (min-width: 480px) 448px, 92vw"
                 priority
-                // Eager (it is the desktop LCP), but not "high": on a phone the
-                // portrait sits below the headline, and a high-priority 80 KB
-                // image there competes with the text that is the mobile LCP.
+
                 fetchPriority="auto"
                 className="block size-full"
                 imgClassName="size-full object-cover object-[center_20%]"
@@ -152,12 +119,10 @@ export function Hero() {
               </figcaption>
             </figure>
 
-            {/* Floating proof chip. Sits over the frame on wide screens only, so
-                it never overlaps the subject's face on a phone. */}
             <div className="mt-4 rounded-xl border border-ink-600 bg-ink-850/90 p-4 backdrop-blur lg:absolute lg:-bottom-8 lg:-left-8 lg:mt-0 lg:w-56">
               <p className="font-display text-2xl font-bold text-brand-500">Weekly</p>
               <p className="mt-1 text-xs leading-snug text-chalk-400">
-                Every log and check-in reviewed by a person, then the programme adjusted.
+                Every log and check-in reviewed by a person, then the program adjusted.
               </p>
             </div>
           </div>

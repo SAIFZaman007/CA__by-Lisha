@@ -1,5 +1,5 @@
 /**
- * The training intake — eight questions, one programme.
+ * The training intake — eight questions, one program.
 **/
 
 import { useMemo, useState } from 'react'
@@ -100,14 +100,6 @@ function seedForm(saved, imperial) {
   }
 }
 
-/**
- * Fetches the answers, then hands them to the fields.
- *
- * The split is deliberate: the form's state is seeded from the saved answers
- * exactly once, when the fields mount with them already in hand. Seeding
- * inside an effect instead would render an empty form first and overwrite
- * whatever the client had started typing when the request came back.
- */
 export function IntakeForm({ onDone, compact = false }) {
   const { data, isPending } = useQuery({
     queryKey: keys.workoutIntake,
@@ -144,8 +136,6 @@ function IntakeFields({ data, onDone, compact }) {
   const save = useMutation({
     mutationFn: (body) => api.workouts.saveIntake(body),
     onSuccess: (result) => {
-      // Everything sized from the profile is now stale: the plan itself, the
-      // dashboard's weekly targets, and the macros the meal plan was built on.
       qc.invalidateQueries({ queryKey: ['workouts'] })
       qc.invalidateQueries({ queryKey: keys.dashboard })
       qc.invalidateQueries({ queryKey: keys.profile })
@@ -159,8 +149,6 @@ function IntakeFields({ data, onDone, compact }) {
       if (result.plan) {
         toast.success('Your training plan is ready.')
       } else {
-        // Saved, but nothing to train from yet — say why rather than dropping
-        // the client onto an empty Workout tab with no explanation.
         toast.error(result.message ?? 'Saved. Your coach will build your plan.')
       }
       onDone?.(result)
@@ -221,7 +209,7 @@ function IntakeFields({ data, onDone, compact }) {
         <form onSubmit={submit} className="space-y-8">
           <section className="space-y-4">
             <p className="text-sm text-chalk-400">
-              Your programme is built from these answers — and rebuilt whenever you change
+              Your program is built from these answers — and rebuilt whenever you change
               them. It takes about a minute.
             </p>
 

@@ -24,7 +24,7 @@ export function Programs() {
   if (isLoading) {
     return (
       <Section id="programs" tone="raised">
-        <SectionHeading eyebrow="Coaching programmes" title="Three levels." accent="One standard." />
+        <SectionHeading eyebrow="Coaching programs" title="Three levels." accent="One standard." />
         <Skeleton className="mt-10 h-96 w-full" />
       </Section>
     )
@@ -37,7 +37,7 @@ export function Programs() {
   return (
     <Section id="programs" tone="raised">
       <SectionHeading
-        eyebrow="Coaching programmes"
+        eyebrow="Coaching programs"
         title="Three levels."
         accent="One standard."
         description="You start where your training history puts you and move up when Coach Auto assesses you are ready — not before."
@@ -64,8 +64,6 @@ export function Programs() {
         ))}
       </motion.div>
 
-      {/* initial={false}: the first panel renders in place (prerendered HTML
-          must never start at opacity 0); switching tabs still animates. */}
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
           key={program.id}
@@ -101,10 +99,6 @@ export function Programs() {
               ))}
             </ul>
 
-            {/* The three stats used to sit in the right-hand column, which forced
-                that column taller than this card and left dead space here.
-                Inside the card they fill it, and `mt-auto` absorbs any slack so
-                the footer stays pinned to the bottom edge. */}
             <dl className="mt-auto grid grid-cols-2 gap-3 pt-8 sm:grid-cols-3">
               <Detail label="Training days" value={`${program.days_per_week} / week`} />
               <Detail label="Session length" value={`${program.session_minutes} min`} />
@@ -116,8 +110,7 @@ export function Programs() {
                 <span className="font-display text-3xl font-bold text-brand-500">${price}</span>
                 <span className="ml-1.5 text-sm text-chalk-500">/ {program.billing_period}</span>
               </p>
-              {/* A level that is full cannot be bought (the API answers 409), so
-                  it keeps a route to the coach instead of a dead-end sign-up. */}
+
               {program.is_accepting_clients === false ? (
                 <Button to="/contact">
                   Join the waitlist
@@ -132,8 +125,6 @@ export function Programs() {
             </div>
           </div>
 
-          {/* Nothing but the photograph, taking its height from the card beside
-              it, so both columns start and finish on the same line. */}
           <Figure
             image={`coach-auto-gym-${(active % 3) + 1}`}
             sizes="(min-width: 1024px) 38vw, 90vw"

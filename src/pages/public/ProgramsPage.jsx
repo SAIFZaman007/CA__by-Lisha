@@ -18,14 +18,14 @@ function price(cents) {
 
 export default function ProgramsPage() {
   useSeo({
-    title: 'Online Strength Coaching Programmes — Level 1 to 3',
+    title: 'Online Strength Coaching Programs — Level 1 to 3',
     description:
       'Coach Auto online coaching: Level 1 trains 3 days a week, Level 2 four, Level 3 five to six. Each includes a meal plan, exercise videos and weekly reviews.',
     path: '/programs',
     keywords: KEYWORDS.programs,
     jsonLd: breadcrumbSchema([
       { name: 'Home', path: '/' },
-      { name: 'Programmes', path: '/programs' },
+      { name: 'Programs', path: '/programs' },
     ]),
   })
 
@@ -49,7 +49,7 @@ export default function ProgramsPage() {
       <Section className="pt-36">
         <SectionHeading
           as="h1"
-          eyebrow="Coaching programmes"
+          eyebrow="Coaching programs"
           title="Choose the level that matches your training"
           description="Every level runs the same coaching standard — the difference is how many days a week you train and how much volume your body can recover from."
         />
@@ -64,7 +64,7 @@ export default function ProgramsPage() {
           <motion.div variants={fadeUp} className="mt-12">
             <EmptyState
               icon={TriangleAlert}
-              title="The programme list did not load"
+              title="The program list did not load"
               description="That is on our side. Try again — or send your details below and Coach Auto will tell you which level fits."
               action={
                 <Button onClick={() => refetch()} loading={isFetching}>
@@ -76,7 +76,7 @@ export default function ProgramsPage() {
         ) : list.length === 0 ? (
           <motion.div variants={fadeUp} className="mt-12">
             <EmptyState
-              title="Programmes are being updated"
+              title="Programs are being updated"
               description="The levels are being rewritten right now. Send your details below and Coach Auto will come back to you directly."
               action={<Button to="/contact">Get in touch</Button>}
             />
@@ -115,7 +115,7 @@ export default function ProgramsPage() {
 
                 <div className="mt-7">
                   <Button to={`/programs/${program.slug}`} fullWidth>
-                    Full programme detail
+                    Full program detail
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Button>
                 </div>

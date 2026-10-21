@@ -13,17 +13,8 @@ import { Spinner } from '@/components/ui/Spinner'
 const TITLE = 'Hall of the Coach'
 const DESCRIPTION =
   'Transformations, coaching sessions, competition days and certifications from Coach Auto ' +
-  'at Autonomy Health and Fitness. The work behind the programmes.'
+  'at Autonomy Health and Fitness. The work behind the programs.'
 
-/**
- * One photo.
- *
- * `width` and `height` are set on the element even though CSS controls the
- * rendered size. That pair is what lets the browser reserve the right box
- * before the bytes arrive — without it every image that loads shoves the grid
- * around, and Cumulative Layout Shift is a ranking signal on precisely the page
- * this client wants found.
- */
 function GalleryTile({ image, onOpen }) {
   return (
     <button
@@ -37,8 +28,6 @@ function GalleryTile({ image, onOpen }) {
         alt={image.alt_text}
         width={image.width ?? undefined}
         height={image.height ?? undefined}
-        // Native lazy loading below the fold, async decode so a large JPEG
-        // never blocks the main thread while the rest of the page paints.
         loading="lazy"
         decoding="async"
         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -114,9 +103,6 @@ export default function GalleryPage() {
     return (sections ?? []).find((section) => section.category === active)?.images ?? []
   }, [active, allImages, sections])
 
-  // Built from every image rather than the filtered view: the structured data
-  // describes the gallery as a whole, and a crawler that arrives while a filter
-  // happens to be applied should still be told about all of it.
   const jsonLd = useMemo(() => {
     if (!allImages.length) return breadcrumbSchema([{ name: TITLE, path: '/gallery' }])
     return gallerySchema(allImages, { path: '/gallery', name: TITLE })

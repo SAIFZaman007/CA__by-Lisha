@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { AnimatePresence } from 'motion/react'
 import { Plus } from 'lucide-react'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
 import { FAQS } from '@/data/site'
@@ -28,6 +27,7 @@ export function Faq() {
                   type="button"
                   onClick={() => setOpen(isOpen ? -1 : index)}
                   aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
                   className="flex w-full items-center justify-between gap-6 py-5 text-left"
                 >
                   <span className="font-display text-base uppercase tracking-wide text-white sm:text-lg">
@@ -42,19 +42,18 @@ export function Faq() {
                   />
                 </button>
               </dt>
-              <AnimatePresence initial={false}>
-                {isOpen && (
-                  <motion.dd
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.28 }}
-                    className="overflow-hidden"
-                  >
-                    <p className="pb-6 pr-10 text-sm leading-relaxed text-chalk-400">{faq.answer}</p>
-                  </motion.dd>
+
+              <dd
+                id={`faq-answer-${index}`}
+                className={cn(
+                  'grid transition-[grid-template-rows,opacity,visibility] duration-300 ease-out motion-reduce:transition-none',
+                  isOpen ? 'grid-rows-[1fr] opacity-100' : 'invisible grid-rows-[0fr] opacity-0',
                 )}
-              </AnimatePresence>
+              >
+                <div className="overflow-hidden">
+                  <p className="pb-6 pr-10 text-sm leading-relaxed text-chalk-400">{faq.answer}</p>
+                </div>
+              </dd>
             </div>
           )
         })}

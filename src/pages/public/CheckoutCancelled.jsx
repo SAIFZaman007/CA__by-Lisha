@@ -4,15 +4,10 @@ import { XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { useSeo } from '@/lib/seo'
 
-/**
- * Where Stripe sends the browser back when someone backs out of Checkout
- * before paying. Nothing was charged — this is just a soft landing page.
- */
 export default function CheckoutCancelled() {
   const [params] = useSearchParams()
   const programSlug = params.get('program')
 
-  // Transactional page: never indexed.
   useSeo({ title: 'Payment not completed', path: '/checkout/cancelled', noIndex: true })
 
   return (
@@ -28,7 +23,7 @@ export default function CheckoutCancelled() {
           Go to home
         </Button>
         <Button to={programSlug ? `/programs/${programSlug}` : '/programs'} size="lg" fullWidth>
-          View programmes
+          View programs
         </Button>
       </div>
     </div>

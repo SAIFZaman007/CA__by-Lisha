@@ -11,36 +11,6 @@ import { FullPageSpinner, Spinner } from '@/components/ui/Spinner'
 import { useSeo } from '@/lib/seo'
 import { trackEvent } from '@/lib/analytics'
 
-/**
- * Where Stripe sends the browser back after a completed Checkout session.
- *
- * The redirect itself proves nothing — anyone can open this URL without
- * paying — so this page asks the backend to verify the session against Stripe
- * before showing anything as "paid". The backend additionally checks that the
- * signed-in user is the one the session was opened for.
- *
- * Three things this page is responsible for, in order:
- *
- *   1. **Wait for the session to come back.** The round trip through Stripe's
- *      domain destroys the in-memory access token, so on return the app is
- *      briefly `loading` while the refresh cookie mints a new one. Calling the
- *      API during that window gets a 401 and shows a payment failure to
- *      someone who has just paid. Nothing happens until `authStatus` settles.
- *
- *   2. **Confirm and provision.** The confirm endpoint reconciles the session
- *      into the local database when it is paid, so the plan is live whether or
- *      not the webhook has landed yet. See `_reconcile_checkout` on the API
- *      for why both paths exist.
- *
- *   3. **Poll briefly, then invalidate.** If the confirm call comes back paid
- *      but not yet provisioned — Stripe still finalising, or a webhook and this
- *      request racing — it retries a few times rather than declaring success on
- *      a dashboard that will say "no plan yet". Once provisioned, the cached
- *      entitlement and billing queries are cleared, so the portal renders the
- *      new plan instead of the stale pre-purchase copy the user is about to
- *      navigate into.
- */
-
 const MAX_ATTEMPTS = 5
 const RETRY_MS = 1500
 
@@ -56,15 +26,11 @@ export default function CheckoutSuccess() {
   const [entitlement, setEntitlement] = useState(null)
   const [message, setMessage] = useState('')
 
-  // States that follow directly from the URL and the session are derived, not
-  // stored — setting them from inside the effect caused a cascading re-render.
   const derivedState = !sessionId ? 'error' : authStatus === 'anonymous' ? 'signin' : null
   const state = derivedState ?? fetchState
   const shownMessage = !sessionId ? 'No checkout session was given.' : message
 
   useEffect(() => {
-    // Nothing to poll without a session id, while the silent refresh is still
-    // running, or when the visitor must sign in first.
     if (!sessionId || authStatus !== 'authenticated') return undefined
 
     let cancelled = false
@@ -105,9 +71,6 @@ export default function CheckoutSuccess() {
           /* the CTA below still works without the summary card */
         }
 
-        // The sale is reported even when that lookup failed — the payment is
-        // confirmed above, and the amount is simply left out if it is unknown.
-        // Once per Stripe session (a reload of this page is not a second sale).
         const sub = data?.subscription
         const key = `ca:purchase-tracked:${sessionId}`
         let seen = false
@@ -150,13 +113,13 @@ export default function CheckoutSuccess() {
           <CheckCircle2 className="size-14 text-emerald-400" />
           <h1 className="font-display text-2xl font-semibold text-white">Payment successful</h1>
           <p className="text-center text-chalk-400">
-            You're in. Your programme is unlocked and ready.
+            You're in. Your program is unlocked and ready.
           </p>
 
           {entitlement?.program && (
             <Card className="w-full p-5">
               <dl className="space-y-3 text-sm">
-                <Row label="Programme" value={entitlement.program.name} />
+                <Row label="Program" value={entitlement.program.name} />
                 <Row label="Level" value={entitlement.level} />
                 {entitlement.subscription && (
                   <>

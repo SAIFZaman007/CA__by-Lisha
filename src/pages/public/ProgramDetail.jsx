@@ -44,8 +44,6 @@ export default function ProgramDetail() {
   })
 
   function handlePurchaseClick() {
-    // No account yet: sign up first (the chosen plan travels with the visitor),
-    // then pay from the billing page of the new dashboard.
     if (authStatus !== 'authenticated') {
       navigate(signupPath(program.slug))
       return
@@ -59,7 +57,7 @@ export default function ProgramDetail() {
   }
 
   useSeo({
-    title: program ? `${program.name} — Online Coaching Programme` : 'Coaching programme',
+    title: program ? `${program.name} — Online Coaching Program` : 'Coaching program',
     description: program
       ? [
           program.tagline && program.tagline.replace(/[.!?]?$/, '.'),
@@ -68,11 +66,9 @@ export default function ProgramDetail() {
         ]
           .filter(Boolean)
           .join(' ')
-      : 'Online strength coaching programme from Coach Auto at Autonomy Health and Fitness.',
+      : 'Online strength coaching program from Coach Auto at Autonomy Health and Fitness.',
     path: `/programs/${slug}`,
     image: program?.image_url,
-    // Only for a programme that actually loaded: a 404 slug must not be
-    // described to crawlers as a purchasable service.
     noIndex: isError,
     jsonLd: program
       ? {
@@ -81,7 +77,7 @@ export default function ProgramDetail() {
             programSchema(program),
             breadcrumbSchema([
               { name: 'Home', path: '/' },
-              { name: 'Programmes', path: '/programs' },
+              { name: 'Programs', path: '/programs' },
               { name: program.name, path: `/programs/${program.slug}` },
             ]),
           ],
@@ -97,13 +93,13 @@ export default function ProgramDetail() {
     const notFound = error?.response?.status === 404
     body = (
       <EmptyState
-        title={notFound ? 'That programme does not exist' : 'That programme did not load'}
+        title={notFound ? 'That program does not exist' : 'That program did not load'}
         description={
           notFound
             ? 'It may have been renamed. Have a look at the current levels.'
             : 'Something went wrong on our side. The full list of levels is still available.'
         }
-        action={<Button to="/programs">See all programmes</Button>}
+        action={<Button to="/programs">See all programs</Button>}
       />
     )
   } else {
@@ -116,7 +112,7 @@ export default function ProgramDetail() {
           className="mb-8 inline-flex items-center gap-2 text-sm text-chalk-400 transition-colors hover:text-brand-500"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
-          All programmes
+          All programs
         </Link>
 
         <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr]">
@@ -164,8 +160,6 @@ export default function ProgramDetail() {
                 </div>
               )}
             </dl>
-            {/* A level that is full cannot be bought (the API answers 409), so it
-                keeps a route to the coach instead of a dead-end sign-up. */}
             {program.is_accepting_clients === false ? (
               <Button to="/contact" fullWidth size="lg" className="mt-7">
                 Join the waitlist

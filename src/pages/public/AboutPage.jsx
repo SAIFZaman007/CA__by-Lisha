@@ -43,9 +43,6 @@ export default function AboutPage() {
     path: '/about',
     type: 'profile',
     keywords: KEYWORDS.about,
-    // Organization/WebSite/Person arrive with every page (lib/seo.js); this
-    // page adds that it IS her profile, which is what Google's ProfilePage
-    // type exists to say.
     jsonLd: [
       breadcrumbSchema([
         { name: 'Home', path: '/' },
@@ -63,9 +60,6 @@ export default function AboutPage() {
             <motion.p variants={fadeUp} className="eyebrow mb-3">
               About {SITE.brand} · {SITE.alternateNames[0]}
             </motion.p>
-            {/* Her name is the heading: this is the page a search for
-                "Lisha Chesson" should land on, and the <h1> is where a search
-                engine looks first to decide what a page is about. */}
             <motion.h1 variants={fadeUp} className="text-4xl sm:text-6xl">
               {SITE.coach?.name ? (
                 <>
@@ -90,7 +84,7 @@ export default function AboutPage() {
                 <p className="leading-relaxed">
                   Coach Auto is founded and run by{' '}
                   <strong className="text-chalk-100">{SITE.coach.name}</strong>, a{' '}
-                  {SITE.coach.jobTitle.toLowerCase()}. She writes every programme and meal plan
+                  {SITE.coach.jobTitle.toLowerCase()}. She writes every program and meal plan
                   herself and reads every client check-in — the coach you message is the coach
                   who wrote your plan.
                 </p>

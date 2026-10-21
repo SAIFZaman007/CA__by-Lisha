@@ -7,20 +7,27 @@ import {
   MonitorPlay,
   Moon,
 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { Section, SectionHeading, motion, fadeUp } from '@/components/ui/Section'
+import { api } from '@/lib/api'
+import { keys } from '@/lib/queryClient'
 
-/**
- * "What you actually get" band.
- *
- * The landing page previously jumped from the programme tabs straight into
- * process and nutrition, which left long empty stretches and never set out the
- * deliverables in one place. Every item here maps to something genuinely built
- * in the portal, so the page promises nothing the product does not do.
- */
+const LEVEL_LABEL = { level_1: 'Level 1', level_2: 'Level 2', level_3: 'Level 3' }
+
+function priceSentence(programs) {
+  const list = Array.isArray(programs) ? programs : (programs?.items ?? [])
+  const tiers = [...list]
+    .sort((a, b) => String(a.level).localeCompare(String(b.level)))
+    .filter((p) => LEVEL_LABEL[p.level] && Number.isFinite(p.price_cents))
+    .map((p) => `${LEVEL_LABEL[p.level]} is $${(p.price_cents / 100).toFixed(0)}/${p.billing_period ?? 'month'}`)
+  const lock = 'Clients who join now keep their rate for as long as their coaching runs.'
+  return tiers.length ? `${tiers.join(', ')}. ${lock}` : lock
+}
+
 const FEATURES = [
   {
     icon: Dumbbell,
-    title: 'Your training programme',
+    title: 'Your training program',
     body: 'Sets, rep ranges and rest written for your level, with the weights you hit last time shown beside each movement.',
   },
   {
@@ -51,6 +58,8 @@ const FEATURES = [
 ]
 
 export function Included() {
+  const { data: programs } = useQuery({ queryKey: keys.programs, queryFn: api.site.programs })
+
   return (
     <Section id="included">
       <SectionHeading
@@ -84,8 +93,7 @@ export function Included() {
         className="mx-auto mt-12 flex max-w-2xl items-center justify-center gap-2 rounded-xl border border-ink-600 bg-ink-850 px-6 py-4 text-center text-sm text-chalk-400"
       >
         <CalendarCheck className="size-4 shrink-0 text-brand-500" aria-hidden="true" />
-        All three levels are the same price. Clients who join now keep that rate for as long as
-        their coaching runs.
+        {priceSentence(programs)}
       </motion.p>
     </Section>
   )

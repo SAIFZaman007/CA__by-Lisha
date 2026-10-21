@@ -8,33 +8,20 @@ import { keys } from '@/lib/queryClient'
 
 const LEVEL_SHORT = { level_1: 'Level 1', level_2: 'Level 2', level_3: 'Level 3' }
 
-/**
- * Programme links come from the live catalogue, not hard-coded slugs.
- *
- * The old list pointed at fixed URLs. A slug is regenerated when the coach
- * renames a plan, so a hard-coded link silently became a "programme not
- * found" page — linked from the footer of every page on the site, which is
- * the worst place for a crawler to find a soft 404. Same query key as the
- * home and programmes pages, so this costs no extra request there, and the
- * prerender bakes the real links into the HTML.
- */
-function useProgrammeLinks() {
+function useProgramLinks() {
   const { data } = useQuery({ queryKey: keys.programs, queryFn: api.site.programs })
-  const programmes = Array.isArray(data) ? data : (data?.items ?? [])
+  const programs = Array.isArray(data) ? data : (data?.items ?? [])
   return [
-    { to: '/programs', label: 'All programmes' },
-    ...programmes
-      .filter((programme) => programme.slug)
+    { to: '/programs', label: 'All programs' },
+    ...programs
+      .filter((program) => program.slug)
       .slice(0, 5)
-      .map((programme) => {
-        // "Level 1 — Strength Foundation" → "Level 1 — Foundation"-style
-        // short labels when the name follows that pattern; the full name
-        // otherwise.
-        const name = programme.name ?? ''
+      .map((program) => {
+        const name = program.name ?? ''
         const suffix = name.includes('—') ? name.split('—').pop().trim() : ''
-        const level = LEVEL_SHORT[programme.level]
+        const level = LEVEL_SHORT[program.level]
         return {
-          to: `/programs/${programme.slug}`,
+          to: `/programs/${program.slug}`,
           label: level && suffix ? `${level} — ${suffix}` : name,
         }
       }),
@@ -62,8 +49,8 @@ const COLUMNS = [
 ]
 
 export function Footer() {
-  const programmeLinks = useProgrammeLinks()
-  const columns = [{ title: 'Coaching', links: programmeLinks }, ...COLUMNS]
+  const programLinks = useProgramLinks()
+  const columns = [{ title: 'Coaching', links: programLinks }, ...COLUMNS]
 
   return (
     <footer className="border-t border-ink-600 bg-ink-950">
@@ -72,13 +59,9 @@ export function Footer() {
           <div>
             <LogoStacked />
             <p className="mt-5 max-w-sm text-sm leading-relaxed text-chalk-400">
-              Online strength and bodybuilding coaching. Programmes written by hand, reviewed
+              Online strength and bodybuilding coaching. Programs written by hand, reviewed
               every week, built to make you stronger than you were.
             </p>
-            {/* One plain sentence naming every alias of the business and its
-                coach, on every page. Consistent name-and-relationship text
-                across a site is part of how search engines decide these are
-                one entity. */}
             <p className="mt-3 max-w-sm text-xs leading-relaxed text-chalk-500">
               {SITE.brand} is the online coaching brand of {SITE.business} (Autonomy Fitness)
               {SITE.coach?.name ? (
@@ -137,7 +120,7 @@ export function Footer() {
           </p>
           <p className="max-w-xl text-xs text-chalk-500">
             Coaching is not medical advice. Speak to your doctor before starting a new training
-            or nutrition programme.
+            or nutrition program.
           </p>
         </div>
       </div>

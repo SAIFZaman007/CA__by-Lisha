@@ -9,10 +9,7 @@ import { cn } from '@/lib/utils'
 
 
 const LINKS = [
-  { to: '/programs', label: 'Programmes' },
-  // Sits directly after Programmes on purpose. It is the page that answers
-  // "does this actually work", which is the question someone has right after
-  // they have seen the price.
+  { to: '/programs', label: 'Programs' },
   { to: '/gallery', label: 'Gallery' },
   { to: '/about', label: 'About' },
   { to: '/tools', label: 'Calculators' },
@@ -25,13 +22,8 @@ export function Header() {
   const { pathname } = useLocation()
   const status = useAuth((s) => s.status)
 
-  // The landing page opens on a full-bleed hero, so the bar can sit directly on
-  // the artwork. Inner pages start with content at the top, where a see-through
-  // bar would collide with it — so those get the glass treatment immediately.
   const overHero = pathname === '/'
 
-  // Close the mobile menu on navigation. Derived during render rather than in an
-  // effect, which avoids a second render pass.
   const [lastPath, setLastPath] = useState(pathname)
   if (lastPath !== pathname) {
     setLastPath(pathname)
@@ -45,7 +37,6 @@ export function Header() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // Stop the page scrolling behind the open mobile menu.
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => {
@@ -60,8 +51,7 @@ export function Header() {
       className={cn(
         'fixed inset-x-0 top-0 z-50 transition-all duration-300',
         glass
-          ? // Translucent rather than solid: the hero stays visible through the
-            // bar while blur and a slight tint keep the labels readable.
+          ? 
             'border-b border-white/5 bg-ink-950/55 shadow-lg shadow-black/20 backdrop-blur-xl backdrop-saturate-150'
           : 'border-b border-transparent bg-transparent',
       )}
@@ -76,8 +66,6 @@ export function Header() {
           glass ? 'h-16' : 'h-20',
         )}
       >
-        {/* Full lockup from the small breakpoint up; the mark alone on phones,
-            where a 5.8:1 image would crowd out the menu button. */}
         <Logo size="md" className="hidden sm:inline-flex" />
         <Logo size="md" markOnly className="sm:hidden" />
 
